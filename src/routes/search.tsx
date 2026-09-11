@@ -24,11 +24,11 @@ type SearchParams = { blood: string; city: string; area: string };
 
 export const Route = createFileRoute("/search")({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    blood: BLOOD_TYPES.includes(String(search.blood ?? "") as (typeof BLOOD_TYPES)[number])
-      ? String(search.blood)
+    blood: BLOOD_TYPES.includes(String(search["blood"] ?? "") as (typeof BLOOD_TYPES)[number])
+      ? String(search["blood"])
       : "O+",
-    city: String(search.city ?? ""),
-    area: String(search.area ?? ""),
+    city: String(search["city"] ?? ""),
+    area: String(search["area"] ?? ""),
   }),
   head: () => ({
     meta: [
