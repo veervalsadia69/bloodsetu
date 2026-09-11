@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 /**
- * Masked call: the donor's number never leaves the server. We hand the
- * recipient a private bridge number to dial from their own phone; when the
- * bridge answers it connects them to the donor. Both sides see only the bridge.
+ * Direct call: a verified recipient gets the donor's own number so their
+ * dial pad opens straight away. The number is only released after the
+ * recipient's access token is checked server-side.
  */
 export const callDonor = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
@@ -31,20 +31,11 @@ export const callDonor = createServerFn({ method: "POST" })
 
     const { data: donor } = await db
       .from("donors")
-      .select("id, is_active")
+      .select("id, is_active, contact_number")
       .eq("id", data.donorId)
       .eq("is_active", true)
       .maybeSingle();
     if (!donor) throw new Error("This donor is no longer listed.");
-
-    const { twilioVoiceNumber } = await import("@/lib/twilio.server");
-    const bridgeNumber = await twilioVoiceNumber();
-
-    // Remember, briefly and privately, who this caller is about to reach.
-    await db.from("call_bridge_sessions").insert({
-      recipient_mobile: recipient.mobile,
-      donor_id: donor.id,
-    });
 
     // Record the contact so the recipient can see their recently called donors.
     await db.from("recipient_contact_logs").insert({
@@ -52,8 +43,7 @@ export const callDonor = createServerFn({ method: "POST" })
       donor_id: donor.id,
     });
 
-    // Only the shared bridge number is returned — never the donor's number.
-    return { ok: true as const, bridgeNumber };
+    return { ok: true as const, phone: `+91${donor.contact_number}` };
   });
 
 /** The recipient's own log of the donors they contacted most recently. */
