@@ -101,6 +101,7 @@ function AdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Donor ID</TableHead>
                   <TableHead>Donor</TableHead>
                   <TableHead>Group</TableHead>
                   <TableHead>Area</TableHead>
@@ -114,6 +115,7 @@ function AdminPage() {
               <TableBody>
                 {rows.map((row) => (
                   <TableRow key={row.id}>
+                    <TableCell className="font-mono text-xs">{row.donorCode}</TableCell>
                     <TableCell>
                       <div className="font-medium">{row.fullName}</div>
                       <div className="text-xs text-muted-foreground">
