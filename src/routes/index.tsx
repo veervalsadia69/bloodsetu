@@ -67,7 +67,7 @@ function Home() {
                   className="grid gap-4 sm:grid-cols-2"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    navigate({ to: "/search", search: { blood, city, area } });
+                    navigate({ to: "/verify", search: { blood, city, area } });
                   }}
                 >
                   <div className="space-y-1.5">
@@ -100,7 +100,7 @@ function Home() {
                     />
                   </div>
                   <Button type="submit" size="lg" className="h-12 sm:col-span-2">
-                    <Search className="size-4" /> Search donors
+                    <Search className="size-4" /> Find donors — verify to contact
                   </Button>
                 </form>
               </div>
