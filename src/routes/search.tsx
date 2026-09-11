@@ -226,8 +226,8 @@ function SearchPage() {
                   Donor names and calling are hidden
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Verify your identity once with a live camera photo and a one-time code to unlock donor
-                  names and private, number-masked calling.
+                  Verify your identity once with a live camera photo and a quick captcha to unlock
+                  donor names and one-tap calling from your phone.
                 </p>
               </div>
             </div>
