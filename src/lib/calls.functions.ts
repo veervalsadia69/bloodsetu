@@ -1,47 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
-
-// Public base URL Twilio can reach to fetch the call-bridge TwiML.
-// The preview URL serves the latest build; update to the published/custom
-// domain URL once the app is published.
-const PUBLIC_BASE_URL = "https://id-preview--883202d5-9652-4d6a-bb12-413feb0379b9.lovable.app";
-
-async function bridgeSignature(donorId: string) {
-  const { createHmac } = await import("crypto");
-  const secret = process.env["CALL_BRIDGE_SECRET"];
-  if (!secret) throw new Error("Call bridge is not configured yet.");
-  return createHmac("sha256", secret).update(donorId).digest("hex").slice(0, 32);
-}
-
-async function signedBridgeUrl(donorId: string, fromNumber: string) {
-  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&from=${encodeURIComponent(fromNumber)}&sig=${await bridgeSignature(donorId)}`;
-}
-
-async function twilioRequest(path: string, method: "GET" | "POST", form?: URLSearchParams) {
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  const twilioKey = process.env["TWILIO_API_KEY"];
-  if (!lovableKey || !twilioKey) {
-    throw new Error("Calling is not connected yet. Please try again soon.");
-  }
-  const response = await fetch(`${GATEWAY_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": twilioKey,
-      ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
-    },
-    ...(form ? { body: form.toString() } : {}),
-  });
-  const body = await response.text();
-  if (!response.ok) {
-    console.error(`Twilio request failed [${response.status}]: ${body}`);
-    throw new Error(`The call could not be placed [${response.status}]. Please try again.`);
-  }
-  return body ? JSON.parse(body) : {};
-}
-
+/**
+ * Verified-recipient call: validates the access token, logs the contact, and
+ * returns the donor's number so the browser can open the phone's dial pad.
+ * The number is only ever released to a verified recipient.
+ */
 export const callDonor = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z
@@ -65,7 +29,8 @@ export const callDonor = createServerFn({ method: "POST" })
       throw new Error("Please verify your identity again before calling a donor.");
     }
 
-    // The donor's number is read server-side only and never sent to the browser.
+    // The donor's number is read server-side and released only to this
+    // verified recipient, who is then sent to their phone's dial pad.
     const { data: donor } = await db
       .from("donors")
       .select("id, contact_number, is_active")
@@ -74,32 +39,13 @@ export const callDonor = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!donor) throw new Error("This donor is no longer listed.");
 
-    const numbers = await twilioRequest("/IncomingPhoneNumbers.json?PageSize=1", "GET");
-    const fromNumber = numbers?.incoming_phone_numbers?.[0]?.phone_number as string | undefined;
-    if (!fromNumber) {
-      throw new Error("Calling is not fully set up yet. Please try again soon.");
-    }
-
-    // Ring the recipient first; when they answer, Twilio fetches the bridge
-    // URL which dials the donor — so neither side ever sees the other's number.
-    await twilioRequest(
-      "/Calls.json",
-      "POST",
-      new URLSearchParams({
-        To: `+91${recipient.mobile}`,
-        From: fromNumber,
-        Url: await signedBridgeUrl(donor.id, fromNumber),
-        Timeout: "20",
-      }),
-    );
-
     // Record the contact so the recipient can see their recently called donors.
     await db.from("recipient_contact_logs").insert({
       recipient_verification_id: recipient.id,
       donor_id: donor.id,
     });
 
-    return { ok: true as const };
+    return { ok: true as const, phone: `+91${donor.contact_number}` };
   });
 
 /** The recipient's own log of the donors they contacted most recently. */
