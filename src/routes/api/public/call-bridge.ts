@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createHmac } from "crypto";
 
 // Twilio fetches this URL after the recipient answers. It returns TwiML that
 // dials the donor, so the donor's real number is never exposed to the app UI.
 // The `sig` parameter proves the URL was minted by our own server function.
 
-function expectedSignature(donorId: string, secret: string) {
+async function expectedSignature(donorId: string, secret: string) {
+  const { createHmac } = await import("crypto");
   return createHmac("sha256", secret).update(donorId).digest("hex").slice(0, 32);
 }
 
@@ -28,7 +28,7 @@ async function handler({ request }: { request: Request }) {
     !secret ||
     !/^[0-9a-f-]{36}$/i.test(donorId) ||
     !/^\+[1-9]\d{6,14}$/.test(fromNumber) ||
-    sig !== expectedSignature(donorId, secret)
+    sig !== (await expectedSignature(donorId, secret))
   ) {
     return new Response("Forbidden", { status: 403 });
   }
