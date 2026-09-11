@@ -256,6 +256,7 @@ function SearchPage() {
                   donor={donor}
                   onCall={handleCall}
                   calling={callingId === donor.id}
+                  onUnlock={() => navigate({ to: "/verify", search: params })}
                 />
               ))}
             </div>
