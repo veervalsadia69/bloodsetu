@@ -93,6 +93,10 @@ export async function twilioCreateCall(toE164: string, answerUrl: string) {
 }
 
 function verifyServiceSid() {
+  const sid = process.env["TWILIO_VERIFY_SERVICE_SID"];
+  if (!sid) throw new Error("Text messaging is not configured yet. Please try again soon.");
+  return sid;
+}
 
 /** Sends a one-time code by SMS to an Indian mobile number. */
 export async function sendSmsCode(mobile10: string) {
