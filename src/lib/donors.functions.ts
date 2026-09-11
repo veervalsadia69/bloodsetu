@@ -168,9 +168,19 @@ export const searchDonors = createServerFn({ method: "POST" })
 
 /* --------------------------- verification --------------------------- */
 
+export const getCaptcha = createServerFn({ method: "GET" }).handler(async () => {
+  const { createCaptcha } = await import("./captcha.server");
+  return createCaptcha();
+});
+
 const startSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
   mobile: phone,
+  captchaChallenge: z.string().trim().min(10).max(400),
+  captchaAnswer: z
+    .string()
+    .trim()
+    .regex(/^-?\d{1,3}$/, "Enter the answer to the security check"),
   faceImage: z
     .string()
     .trim()
@@ -185,8 +195,11 @@ const startSchema = z.object({
 export const startVerification = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => startSchema.parse(data))
   .handler(async ({ data }) => {
+    const { verifyCaptcha } = await import("./captcha.server");
+    if (!verifyCaptcha(data.captchaChallenge, data.captchaAnswer))
+      throw new Error("That security check answer is not correct. Please try the new one.");
+
     const db = await admin();
-    const { sendSmsCode } = await import("./twilio.server");
 
     const [meta, base64] = data.faceImage.split(",") as [string, string];
     const contentType = meta.slice(5, meta.indexOf(";"));
@@ -197,64 +210,19 @@ export const startVerification = createServerFn({ method: "POST" })
       .upload(path, Buffer.from(base64, "base64"), { contentType, upsert: false });
     if (upload.error) throw new Error("Could not save your photo. Please try again.");
 
-    const { data: row, error } = await db
-      .from("recipient_verifications")
-      .insert({
-        full_name: data.fullName,
-        mobile: data.mobile,
-        face_image_path: path,
-        otp_hash: null,
-        otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      })
-      .select("id")
-      .single();
-    if (error || !row) throw new Error("Could not start verification. Please try again.");
-
-    // The code itself is generated, texted and checked by the SMS provider, so
-    // it is never stored in our database or returned to the browser.
-    await sendSmsCode(data.mobile);
-
-    return { verificationId: row.id as string, mobile: data.mobile };
-  });
-
-const confirmSchema = z.object({
-  verificationId: z.string().uuid(),
-  code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code"),
-});
-
-export const confirmVerification = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => confirmSchema.parse(data))
-  .handler(async ({ data }) => {
-    const db = await admin();
-    const { checkSmsCode } = await import("./twilio.server");
-    const { data: row } = await db
-      .from("recipient_verifications")
-      .select("id, mobile, otp_expires_at, attempts, verified, access_token")
-      .eq("id", data.verificationId)
-      .maybeSingle();
-    if (!row) throw new Error("Verification request not found. Please start again.");
-    if (row.attempts >= 5) throw new Error("Too many attempts. Please start verification again.");
-    if (new Date(row.otp_expires_at).getTime() < Date.now())
-      throw new Error("This code has expired. Please request a new one.");
-
-    if (!(await checkSmsCode(row.mobile, data.code))) {
-      await db
-        .from("recipient_verifications")
-        .update({ attempts: row.attempts + 1 })
-        .eq("id", row.id);
-      throw new Error("That code is incorrect. Please check and try again.");
-    }
-
     const token = randomBytes(24).toString("hex");
-    const { error } = await db
-      .from("recipient_verifications")
-      .update({
-        verified: true,
-        access_token: token,
-        token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      })
-      .eq("id", row.id);
+    const { error } = await db.from("recipient_verifications").insert({
+      full_name: data.fullName,
+      mobile: data.mobile,
+      face_image_path: path,
+      otp_hash: null,
+      otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      verified: true,
+      access_token: token,
+      token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    });
     if (error) throw new Error("Could not complete verification. Please try again.");
+
     return { token };
   });
 
