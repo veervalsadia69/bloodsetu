@@ -3,6 +3,7 @@ import { Clock3, HeartHandshake, MapPin, Search, ShieldCheck } from "lucide-reac
 import { useState } from "react";
 
 import heroImage from "@/assets/hero-donors.jpg";
+import { CityInput } from "@/components/city-input";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,13 +87,7 @@ function Home() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      className="h-12"
-                      placeholder="e.g. Mumbai"
-                      value={city}
-                      onChange={(event) => setCity(event.target.value)}
-                    />
+                    <CityInput id="city" value={city} onChange={setCity} />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="area">Neighbourhood (optional)</Label>
