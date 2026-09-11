@@ -1,4 +1,3 @@
-// Major Indian cities used for the city autocomplete on search and registration.
 export const INDIAN_CITIES = [
   "Mumbai",
   "Delhi",
@@ -162,7 +161,6 @@ export const INDIAN_CITIES = [
   "Sonipat",
   "Farrukhabad",
   "Sagar",
-  "Rourkela",
   "Durg",
   "Imphal",
   "Ratlam",
@@ -225,7 +223,6 @@ export const INDIAN_CITIES = [
   "Nandyal",
   "Madanapalle",
   "Srikakulam",
-  "Eluru",
   "Tadepalligudem",
   "Gudivada",
   "Bhimavaram",
@@ -259,10 +256,8 @@ export const INDIAN_CITIES = [
   "Kompally",
   "Alwal",
   "Secunderabad",
-  "Karimnagar",
   "Nalgonda",
   "Mahbubnagar",
-  "Khammam",
   "Suryapet",
   "Miryalaguda",
   "Bhongir",
@@ -291,5 +286,4 @@ export const INDIAN_CITIES = [
   "Bhadradri",
   "Kumuram Bheem",
   "Rajanna",
-  "Peddapalli",
-];
+] as const;
