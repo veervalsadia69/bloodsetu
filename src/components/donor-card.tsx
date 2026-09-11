@@ -8,10 +8,12 @@ export function DonorResultCard({
   donor,
   onCall,
   calling,
+  onUnlock,
 }: {
   donor: Donor;
   onCall?: (donorId: string) => void;
   calling?: boolean;
+  onUnlock?: () => void;
 }) {
   const revealed = Boolean(donor.fullName);
 
@@ -71,17 +73,24 @@ export function DonorResultCard({
           </p>
         </div>
       ) : (
-        <div className="flex items-center gap-2 border-t border-border pt-4 text-sm text-muted-foreground">
-          {donor.available ? (
-            <>
-              <Lock className="size-4 shrink-0" />
-              <span>Name and calling unlock after verification</span>
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="size-4 shrink-0" />
-              <span>Contact hidden while resting</span>
-            </>
+        <div className="space-y-3 border-t border-border pt-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {donor.available ? (
+              <>
+                <Lock className="size-4 shrink-0" />
+                <span>Name and calling unlock after login</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="size-4 shrink-0" />
+                <span>Contact hidden while resting</span>
+              </>
+            )}
+          </div>
+          {donor.available && onUnlock && (
+            <Button className="w-full" onClick={onUnlock}>
+              <ShieldCheck className="size-4" /> Log in to contact this donor
+            </Button>
           )}
         </div>
       )}
