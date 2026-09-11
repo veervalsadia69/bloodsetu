@@ -43,6 +43,10 @@ function Home() {
   const [city, setCity] = useState("");
   const [area, setArea] = useState("");
 
+  const goToVerify = () => {
+    navigate({ to: "/verify", search: { blood, city, area } });
+  };
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
