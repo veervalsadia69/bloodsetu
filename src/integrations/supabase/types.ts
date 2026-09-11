@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      donors: {
+        Row: {
+          age: number
+          blood_type: string
+          city: string
+          contact_number: string
+          created_at: string
+          full_name: string
+          gender: string
+          id: string
+          is_active: boolean
+          last_donation_date: string | null
+          medical_conditions: string | null
+          neighborhood: string
+        }
+        Insert: {
+          age: number
+          blood_type: string
+          city: string
+          contact_number: string
+          created_at?: string
+          full_name: string
+          gender: string
+          id?: string
+          is_active?: boolean
+          last_donation_date?: string | null
+          medical_conditions?: string | null
+          neighborhood: string
+        }
+        Update: {
+          age?: number
+          blood_type?: string
+          city?: string
+          contact_number?: string
+          created_at?: string
+          full_name?: string
+          gender?: string
+          id?: string
+          is_active?: boolean
+          last_donation_date?: string | null
+          medical_conditions?: string | null
+          neighborhood?: string
+        }
+        Relationships: []
+      }
+      recipient_verifications: {
+        Row: {
+          aadhaar_hash: string
+          aadhaar_last4: string
+          access_token: string | null
+          attempts: number
+          created_at: string
+          full_name: string
+          id: string
+          mobile: string
+          otp_expires_at: string
+          otp_hash: string
+          token_expires_at: string | null
+          verified: boolean
+        }
+        Insert: {
+          aadhaar_hash: string
+          aadhaar_last4: string
+          access_token?: string | null
+          attempts?: number
+          created_at?: string
+          full_name: string
+          id?: string
+          mobile: string
+          otp_expires_at: string
+          otp_hash: string
+          token_expires_at?: string | null
+          verified?: boolean
+        }
+        Update: {
+          aadhaar_hash?: string
+          aadhaar_last4?: string
+          access_token?: string | null
+          attempts?: number
+          created_at?: string
+          full_name?: string
+          id?: string
+          mobile?: string
+          otp_expires_at?: string
+          otp_hash?: string
+          token_expires_at?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
