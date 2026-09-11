@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { callDonor, recentContacts } from "@/lib/calls.functions";
 import { ACCESS_TOKEN_KEY, BLOOD_TYPES } from "@/lib/donor-shared";
-import { searchDonors } from "@/lib/donors.functions";
+import { searchDonors, searchHospitalStock } from "@/lib/donors.functions";
 
 type SearchParams = { blood: string; city: string; area: string };
 
@@ -107,6 +107,13 @@ function SearchPage() {
     enabled: Boolean(token) && Boolean(query.data?.verified),
   });
   const recent = recentQuery.data?.contacts ?? [];
+
+  const runStock = useServerFn(searchHospitalStock);
+  const stockQuery = useQuery({
+    queryKey: ["hospital-stock", params.blood, params.city],
+    queryFn: () => runStock({ data: { bloodType: params.blood as never, city: params.city } }),
+  });
+  const stockedHospitals = stockQuery.data?.hospitals ?? [];
 
   const verified = token ? query.data?.verified !== false : false;
 
@@ -236,6 +243,40 @@ function SearchPage() {
                 Verify to see contacts
               </Link>
             </Button>
+          </div>
+        )}
+
+        {(stockQuery.isPending || stockedHospitals.length > 0) && (
+          <div className="mt-6">
+            <h2 className="font-display text-base font-semibold text-muted-foreground">
+              Hospitals with {params.blood} in stock
+            </h2>
+            {stockQuery.isPending ? (
+              <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> Checking hospital stock…
+              </div>
+            ) : (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {stockedHospitals.map((hospital) => (
+                  <div key={hospital.id} className="surface-card flex flex-col gap-2 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-display text-sm font-semibold leading-snug">
+                        {hospital.name}
+                      </p>
+                      <Badge variant="success">{hospital.units} units</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{hospital.city}</p>
+                    {hospital.contactNumber && (
+                      <Button size="sm" variant="outline" asChild>
+                        <a href={`tel:${hospital.contactNumber}`}>
+                          <Phone className="size-3.5" /> Call blood bank
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

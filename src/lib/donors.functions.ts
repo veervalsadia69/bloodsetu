@@ -166,6 +166,56 @@ export const searchDonors = createServerFn({ method: "POST" })
     };
   });
 
+/* ----------------------- hospitals with stock ----------------------- */
+
+export const searchHospitalStock = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        bloodType: z.enum(BLOOD_TYPES),
+        city: z.string().trim().max(60).optional().default(""),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }) => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const db = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    });
+
+    let hospitalQuery = db
+      .from("hospitals")
+      .select("id, name, city, contact_number")
+      .neq("name", "");
+    if (data.city) hospitalQuery = hospitalQuery.ilike("city", `%${data.city}%`);
+    const { data: hospitals, error } = await hospitalQuery.limit(50);
+    if (error) throw new Error("Could not load hospitals right now.");
+
+    const ids = (hospitals ?? []).map((h) => h.id);
+    if (ids.length === 0) return { hospitals: [] as never[] };
+
+    const { data: stock } = await db
+      .from("blood_stock")
+      .select("hospital_id, units")
+      .eq("blood_type", data.bloodType)
+      .gt("units", 0)
+      .in("hospital_id", ids);
+
+    const unitsById = new Map((stock ?? []).map((row) => [row.hospital_id, row.units]));
+    return {
+      hospitals: (hospitals ?? [])
+        .filter((h) => unitsById.has(h.id))
+        .map((h) => ({
+          id: h.id,
+          name: h.name,
+          city: h.city,
+          contactNumber: h.contact_number,
+          units: unitsById.get(h.id) ?? 0,
+        }))
+        .sort((a, b) => b.units - a.units),
+    };
+  });
+
 /* --------------------------- verification --------------------------- */
 
 export const getCaptcha = createServerFn({ method: "GET" }).handler(async () => {
