@@ -22,13 +22,13 @@ import { registerDonor } from "@/lib/donors.functions";
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Register as a Blood Donor — RaktSetu India" },
+      { title: "Register as a Blood Donor — BloodSetu India" },
       {
         name: "description",
         content:
           "Add your blood group, area and contact number to India's donor network in under two minutes. No login required and your number stays hidden until a recipient is verified.",
       },
-      { property: "og:title", content: "Register as a Blood Donor — RaktSetu" },
+      { property: "og:title", content: "Register as a Blood Donor — BloodSetu" },
       {
         property: "og:description",
         content: "Join the donor network in under two minutes. No account, no paperwork.",

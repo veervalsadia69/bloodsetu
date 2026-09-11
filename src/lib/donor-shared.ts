@@ -4,7 +4,7 @@ export const GENDERS = ["Male", "Female", "Other"] as const;
 
 export const COOLDOWN_DAYS = 90;
 
-export const ACCESS_TOKEN_KEY = "raktsetu.recipient_token";
+export const ACCESS_TOKEN_KEY = "bloodsetu.recipient_token";
 
 export type DonorCard = {
   id: string;

@@ -32,13 +32,13 @@ export const Route = createFileRoute("/search")({
   }),
   head: () => ({
     meta: [
-      { title: "Search Blood Donors by Group and Area — RaktSetu" },
+      { title: "Search Blood Donors by Group and Area — BloodSetu" },
       {
         name: "description",
         content:
           "See how many donors match your blood group and neighbourhood. Verify your identity once to unlock donor names and phone numbers.",
       },
-      { property: "og:title", content: "Search Blood Donors by Group and Area — RaktSetu" },
+      { property: "og:title", content: "Search Blood Donors by Group and Area — BloodSetu" },
       {
         property: "og:description",
         content: "Matching donors sorted by nearest neighbourhood first, with contact after verification.",
@@ -151,7 +151,7 @@ function SearchPage() {
                   Donor names and numbers are hidden
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Verify your identity once with Aadhaar and a one-time code to unlock contact
+                  Verify your identity once with a live camera photo and a one-time code to unlock contact
                   details for every matching donor.
                 </p>
               </div>

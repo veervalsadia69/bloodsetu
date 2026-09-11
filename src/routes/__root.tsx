@@ -78,13 +78,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RaktSetu — Verified Blood Donor Network for India" },
+      { title: "BloodSetu — Verified Blood Donor Network for India" },
       {
         name: "description",
         content:
           "Search verified blood donors by group and neighbourhood across India. Donor contacts unlock only after recipient verification.",
       },
-      { property: "og:title", content: "RaktSetu — Verified Blood Donor Network for India" },
+      { property: "og:title", content: "BloodSetu — Verified Blood Donor Network for India" },
       {
         property: "og:description",
         content:
