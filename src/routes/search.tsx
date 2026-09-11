@@ -151,7 +151,7 @@ function SearchPage() {
                   Donor names and numbers are hidden
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Verify your identity once with Aadhaar and a one-time code to unlock contact
+                  Verify your identity once with a live camera photo and a one-time code to unlock contact
                   details for every matching donor.
                 </p>
               </div>

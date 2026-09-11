@@ -142,7 +142,7 @@ function Home() {
               {
                 icon: ShieldCheck,
                 title: "Verification before contact",
-                body: "Recipients confirm identity with Aadhaar and a one-time code before any donor details appear.",
+                body: "Recipients confirm identity with a live camera photo and a one-time code before any donor details appear.",
               },
               {
                 icon: Clock3,
