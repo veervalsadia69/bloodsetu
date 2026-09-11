@@ -189,7 +189,7 @@ export const startVerification = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => startSchema.parse(data))
   .handler(async ({ data }) => {
     const db = await admin();
-    const code = String(randomInt(100000, 999999));
+    const { sendSmsCode } = await import("./twilio.server");
 
     const [meta, base64] = data.faceImage.split(",") as [string, string];
     const contentType = meta.slice(5, meta.indexOf(";"));
