@@ -166,7 +166,7 @@ function VerifyPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl px-4 py-10 sm:px-6">
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-soft">
-          <ShieldCheck className="size-3.5 text-primary" /> Step {step === "details" ? "1" : "2"} of 2
+          <ShieldCheck className="size-3.5 text-primary" /> One-time check
         </span>
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">Recipient verification</h1>
         <p className="mt-3 text-muted-foreground">
@@ -174,8 +174,7 @@ function VerifyPage() {
           and contact details stay unlocked for 7 days.
         </p>
 
-        {step === "details" ? (
-          <form onSubmit={sendCode} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
+        <form onSubmit={submit} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
             <div className="space-y-1.5">
               <Label htmlFor="fullName">Your full name</Label>
               <Input
