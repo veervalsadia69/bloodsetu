@@ -10,16 +10,18 @@ type CityInputProps = {
   placeholder?: string;
   required?: boolean;
   className?: string;
+  name?: string;
 };
 
 // A plain input with a native datalist — mobile-friendly city suggestions,
 // while still allowing any city the user types.
-export function CityInput({ id, value, onChange, placeholder, required, className }: CityInputProps) {
+export function CityInput({ id, value, onChange, placeholder, required, className, name }: CityInputProps) {
   const listId = useId();
   return (
     <>
       <Input
         id={id}
+        name={name}
         list={listId}
         className={className ?? "h-12"}
         placeholder={placeholder ?? "e.g. Mumbai"}

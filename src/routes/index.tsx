@@ -43,6 +43,10 @@ function Home() {
   const [city, setCity] = useState("");
   const [area, setArea] = useState("");
 
+  const goToVerify = () => {
+    navigate({ to: "/verify", search: { blood, city, area } });
+  };
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -65,11 +69,14 @@ function Home() {
               <div className="surface-card mt-8 p-4 sm:p-5">
                 <form
                   className="grid gap-4 sm:grid-cols-2"
+                  action="/verify"
+                  method="get"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    navigate({ to: "/verify", search: { blood, city, area } });
+                    goToVerify();
                   }}
                 >
+                  <input type="hidden" name="blood" value={blood} />
                   <div className="space-y-1.5">
                     <Label htmlFor="blood">Blood group needed</Label>
                     <Select value={blood} onValueChange={setBlood}>
@@ -87,19 +94,28 @@ function Home() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="city">City</Label>
-                    <CityInput id="city" value={city} onChange={setCity} />
+                    <CityInput id="city" name="city" value={city} onChange={setCity} />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="area">Neighbourhood (optional)</Label>
                     <Input
                       id="area"
+                      name="area"
                       className="h-12"
                       placeholder="e.g. Andheri West"
                       value={area}
                       onChange={(event) => setArea(event.target.value)}
                     />
                   </div>
-                  <Button type="submit" size="lg" className="h-12 sm:col-span-2">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="h-12 sm:col-span-2"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      goToVerify();
+                    }}
+                  >
                     <Search className="size-4" /> Find donors — verify to contact
                   </Button>
                 </form>
