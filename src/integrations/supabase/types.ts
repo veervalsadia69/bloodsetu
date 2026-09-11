@@ -105,7 +105,7 @@ export type Database = {
           id: string
           mobile: string
           otp_expires_at: string
-          otp_hash: string
+          otp_hash: string | null
           token_expires_at: string | null
           verified: boolean
         }
@@ -118,7 +118,7 @@ export type Database = {
           id?: string
           mobile: string
           otp_expires_at: string
-          otp_hash: string
+          otp_hash?: string | null
           token_expires_at?: string | null
           verified?: boolean
         }
@@ -131,7 +131,7 @@ export type Database = {
           id?: string
           mobile?: string
           otp_expires_at?: string
-          otp_hash?: string
+          otp_hash?: string | null
           token_expires_at?: string | null
           verified?: boolean
         }
