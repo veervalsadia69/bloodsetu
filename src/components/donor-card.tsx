@@ -65,11 +65,11 @@ export function DonorResultCard({
           </div>
           <Button className="w-full" disabled={calling} onClick={() => onCall?.(donor.id)}>
             {calling ? <Loader2 className="size-4 animate-spin" /> : <PhoneCall className="size-4" />}
-            {calling ? "Connecting you…" : "Call donor — number stays private"}
+            {calling ? "Opening dial pad…" : "Call donor"}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Your phone will ring first; answer it and we'll connect you. The donor never sees your
-            number and you never see theirs.
+            Tap to open your phone's dial pad with the donor's number. Only verified recipients can
+            call.
           </p>
         </div>
       ) : (
