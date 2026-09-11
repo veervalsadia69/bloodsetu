@@ -94,12 +94,13 @@ function Home() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="city">City</Label>
-                    <CityInput id="city" value={city} onChange={setCity} />
+                    <CityInput id="city" name="city" value={city} onChange={setCity} />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="area">Neighbourhood (optional)</Label>
                     <Input
                       id="area"
+                      name="area"
                       className="h-12"
                       placeholder="e.g. Andheri West"
                       value={area}
