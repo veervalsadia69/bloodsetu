@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Clock3, HeartHandshake, MapPin, Search, ShieldCheck } from "lucide-react";
+import { Clock3, HeartHandshake, Hospital, MapPin, Search, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
 import heroImage from "@/assets/hero-donors.jpg";
@@ -128,6 +128,22 @@ function Home() {
                 </a>{" "}
                 — no account needed.
               </p>
+
+              <div className="surface-card mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-display text-sm font-semibold">
+                    Are you a hospital or blood bank?
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Sign in to update your blood stock and record donor donation dates.
+                  </p>
+                </div>
+                <Button asChild variant="outline" size="lg" className="h-11 shrink-0">
+                  <a href="/auth">
+                    <Hospital className="size-4" /> Hospital login
+                  </a>
+                </Button>
+              </div>
             </div>
 
             <div className="relative">
