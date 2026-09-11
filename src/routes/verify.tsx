@@ -48,9 +48,7 @@ function VerifyPage() {
   const [step, setStep] = useState<"details" | "otp">("details");
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState({ fullName: "", mobile: "" });
-  const [session, setSession] = useState<{ id: string; demoCode: string; mobile: string } | null>(
-    null,
-  );
+  const [session, setSession] = useState<{ id: string; mobile: string } | null>(null);
   const [code, setCode] = useState("");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -129,9 +127,9 @@ function VerifyPage() {
     setBusy(true);
     try {
       const result = await start({ data: { ...details, faceImage: photo } });
-      setSession({ id: result.verificationId, demoCode: result.demoCode, mobile: result.mobile });
+      setSession({ id: result.verificationId, mobile: result.mobile });
       setStep("otp");
-      toast.success("One-time code generated");
+      toast.success(`Code sent by SMS to ${result.mobile}`);
     } catch (error) {
       showError(error);
     } finally {
@@ -261,9 +259,9 @@ function VerifyPage() {
             <div className="flex items-center gap-3 rounded-2xl bg-accent/20 p-4 text-sm">
               <KeyRound className="size-5 shrink-0 text-accent-foreground" />
               <p className="text-accent-foreground">
-                Demo mode: SMS delivery isn't connected yet, so your code is{" "}
-                <strong className="font-display tracking-widest">{session?.demoCode}</strong>. It
-                would normally be texted to {session?.mobile}.
+                We texted a 6-digit code to{" "}
+                <strong className="font-display">+91 {session?.mobile}</strong>. It expires in 10
+                minutes — check your messages.
               </p>
             </div>
             <div className="space-y-1.5">
@@ -281,6 +279,17 @@ function VerifyPage() {
             <Button type="submit" size="lg" className="h-12" disabled={busy}>
               {busy && <Loader2 className="size-4 animate-spin" />}
               {busy ? "Verifying" : "Verify and see donors"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                setCode("");
+                void sendCode();
+              }}
+            >
+              <RefreshCw className="size-4" /> Resend code
             </Button>
             <Button
               type="button"

@@ -51,10 +51,13 @@ export async function sendSmsCode(mobile10: string) {
     if (result.status === 429) {
       throw new Error("Too many code requests. Please wait a minute and try again.");
     }
-    if (/unverified|not.*verified/i.test(message)) {
+    if (result.body["code"] === 21608 || /verified tester/i.test(message)) {
       throw new Error(
-        "This number is not allowed to receive messages from our trial phone account yet. Please use a verified number or upgrade the messaging account.",
+        "Our messaging account is still on a trial plan, so it can only text numbers that have been approved for testing. Please upgrade the messaging account or use an approved test number.",
       );
+    }
+    if (result.body["code"] === 21211 || result.body["code"] === 60200) {
+      throw new Error("That mobile number does not look valid. Please check and try again.");
     }
     throw new Error("We could not send the code by SMS. Please check the number and try again.");
   }
