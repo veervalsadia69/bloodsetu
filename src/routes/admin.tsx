@@ -26,13 +26,13 @@ type Row = Awaited<ReturnType<typeof listDonorsAdmin>>[number];
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Donor Records — RaktSetu Admin" },
+      { title: "Donor Records — BloodSetu Admin" },
       {
         name: "description",
         content:
-          "Private records view for RaktSetu coordinators: review donor entries, availability status and remove outdated records.",
+          "Private records view for BloodSetu coordinators: review donor entries, availability status and remove outdated records.",
       },
-      { property: "og:title", content: "Donor Records — RaktSetu Admin" },
+      { property: "og:title", content: "Donor Records — BloodSetu Admin" },
       { property: "og:description", content: "Coordinator-only donor records view." },
       { name: "robots", content: "noindex" },
     ],

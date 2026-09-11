@@ -9,7 +9,7 @@ export function SiteHeader() {
           <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
             <Droplet className="size-5" />
           </span>
-          <span className="font-display text-lg font-semibold tracking-tight">RaktSetu</span>
+          <span className="font-display text-lg font-semibold tracking-tight">BloodSetu</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm font-medium">
           <Link
@@ -35,7 +35,7 @@ export function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-border/70 py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>RaktSetu — connecting India's blood donors with the people who need them.</p>
+        <p>BloodSetu — connecting India's blood donors with the people who need them.</p>
         <div className="flex items-center gap-4">
           <Link to="/admin" className="transition-colors hover:text-foreground">
             Records

@@ -19,13 +19,13 @@ import { BLOOD_TYPES } from "@/lib/donor-shared";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RaktSetu — Find Verified Blood Donors Near You in India" },
+      { title: "BloodSetu — Find Verified Blood Donors Near You in India" },
       {
         name: "description",
         content:
           "Search verified blood donors by blood group and neighbourhood across India. Donors register free in under 2 minutes; contact details unlock only after recipient verification.",
       },
-      { property: "og:title", content: "RaktSetu — Find Verified Blood Donors Near You" },
+      { property: "og:title", content: "BloodSetu — Find Verified Blood Donors Near You" },
       {
         property: "og:description",
         content:
@@ -57,7 +57,7 @@ function Home() {
                 Find a blood donor <span className="text-gradient-brand">near you</span>, in minutes.
               </h1>
               <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-                RaktSetu connects patients and families with willing donors across India. Donor
+                BloodSetu connects patients and families with willing donors across India. Donor
                 privacy is protected — phone numbers appear only after you verify yourself.
               </p>
 
