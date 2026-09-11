@@ -6,6 +6,7 @@ import { BLOOD_TYPES, COOLDOWN_DAYS, GENDERS, type DonorCard } from "./donor-sha
 
 type DonorRow = {
   id: string;
+  donor_code: string;
   full_name: string;
   blood_type: string;
   last_donation_date: string | null;
@@ -45,6 +46,7 @@ function toCard(row: DonorRow, reveal: boolean): DonorCard & { maskedName: strin
   const { available, nextEligibleDate } = eligibility(row.last_donation_date);
   const base = {
     id: row.id,
+    donorCode: row.donor_code,
     maskedName: maskName(row.full_name),
     bloodType: row.blood_type,
     city: row.city,
@@ -86,7 +88,9 @@ export const registerDonor = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => donorSchema.parse(data))
   .handler(async ({ data }) => {
     const db = await admin();
-    const { error } = await db.from("donors").insert({
+    const { data: inserted, error } = await db
+      .from("donors")
+      .insert({
       full_name: data.fullName,
       blood_type: data.bloodType,
       last_donation_date: data.lastDonationDate ? data.lastDonationDate : null,
@@ -95,13 +99,20 @@ export const registerDonor = createServerFn({ method: "POST" })
       gender: data.gender,
       city: data.city,
       neighborhood: data.neighborhood,
-      contact_number: data.contactNumber,
-    });
+        contact_number: data.contactNumber,
+      })
+      .select("donor_code")
+      .single();
     if (error) throw new Error("Could not save your details. Please try again.");
     const { available, nextEligibleDate } = eligibility(
       data.lastDonationDate ? data.lastDonationDate : null,
     );
-    return { ok: true as const, available, nextEligibleDate };
+    return {
+      ok: true as const,
+      donorCode: (inserted as { donor_code: string } | null)?.donor_code ?? "",
+      available,
+      nextEligibleDate,
+    };
   });
 
 const searchSchema = z.object({
@@ -304,6 +315,7 @@ export const listDonorsAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error("Could not load donor records.");
     return (rows as DonorRow[]).map((row) => ({
       id: row.id,
+      donorCode: row.donor_code,
       fullName: row.full_name,
       bloodType: row.blood_type,
       age: row.age,
