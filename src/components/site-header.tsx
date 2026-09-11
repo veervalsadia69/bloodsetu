@@ -20,6 +20,12 @@ export function SiteHeader() {
             Find donors
           </Link>
           <Link
+            to="/auth"
+            className="rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-secondary-foreground"
+          >
+            Hospital login
+          </Link>
+          <Link
             to="/register"
             className="rounded-lg bg-primary px-4 py-2 text-primary-foreground shadow-soft transition-opacity hover:opacity-90"
           >
