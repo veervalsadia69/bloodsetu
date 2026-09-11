@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Camera, KeyRound, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { Camera, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ACCESS_TOKEN_KEY, BLOOD_TYPES } from "@/lib/donor-shared";
-import { confirmVerification, startVerification } from "@/lib/donors.functions";
+import { getCaptcha, startVerification } from "@/lib/donors.functions";
 
 type SearchParams = { blood: string; city: string; area: string };
 
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/verify")({
       {
         name: "description",
         content:
-          "Confirm your identity with your name, mobile number, a live camera photo and a one-time code to unlock verified blood donor contact details.",
+          "Confirm your identity with your name, mobile number, a live camera photo and a quick in-app security check to unlock verified blood donor contact details.",
       },
       { property: "og:title", content: "Recipient Verification — BloodSetu" },
       {
@@ -43,19 +43,31 @@ function VerifyPage() {
   const params = Route.useSearch();
   const navigate = useNavigate();
   const start = useServerFn(startVerification);
-  const confirm = useServerFn(confirmVerification);
+  const newCaptcha = useServerFn(getCaptcha);
 
-  const [step, setStep] = useState<"details" | "otp">("details");
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState({ fullName: "", mobile: "" });
-  const [session, setSession] = useState<{ id: string; mobile: string } | null>(null);
-  const [code, setCode] = useState("");
+  const [captcha, setCaptcha] = useState<{ question: string; challenge: string } | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+
+  const refreshCaptcha = useCallback(async () => {
+    setCaptchaAnswer("");
+    try {
+      setCaptcha(await newCaptcha());
+    } catch {
+      setCaptcha(null);
+    }
+  }, [newCaptcha]);
+
+  useEffect(() => {
+    void refreshCaptcha();
+  }, [refreshCaptcha]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -118,36 +130,32 @@ function VerifyPage() {
     );
   }
 
-  async function sendCode(event?: React.FormEvent) {
-    event?.preventDefault();
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     if (!photo) {
       toast.error("Please take a live photo with your camera to continue.");
       return;
     }
-    setBusy(true);
-    try {
-      const result = await start({ data: { ...details, faceImage: photo } });
-      setSession({ id: result.verificationId, mobile: result.mobile });
-      setStep("otp");
-      toast.success(`Code sent by SMS to ${result.mobile}`);
-    } catch (error) {
-      showError(error);
-    } finally {
-      setBusy(false);
+    if (!captcha) {
+      toast.error("Security check could not load. Please refresh it and try again.");
+      return;
     }
-  }
-
-  async function submitCode(event: React.FormEvent) {
-    event.preventDefault();
-    if (!session) return;
     setBusy(true);
     try {
-      const result = await confirm({ data: { verificationId: session.id, code } });
+      const result = await start({
+        data: {
+          ...details,
+          faceImage: photo,
+          captchaChallenge: captcha.challenge,
+          captchaAnswer,
+        },
+      });
       localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
       toast.success("Verified. Donor contacts unlocked.");
       navigate({ to: "/search", search: params });
     } catch (error) {
       showError(error);
+      void refreshCaptcha();
     } finally {
       setBusy(false);
     }
