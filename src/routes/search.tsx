@@ -65,9 +65,8 @@ function SearchPage() {
   async function handleCall(donorId: string) {
     setCallingId(donorId);
     try {
-      const result = await call({ data: { token, donorId } });
-      toast.success("Opening your dial pad with the donor's number.");
-      window.location.href = `tel:${result.phone}`;
+      await call({ data: { token, donorId } });
+      toast.success("Calling your phone now — answer and we'll connect you to the donor.");
       queryClient.invalidateQueries({ queryKey: ["recent-contacts", token] });
     } catch (error) {
       toast.error(
