@@ -48,9 +48,7 @@ function VerifyPage() {
   const [step, setStep] = useState<"details" | "otp">("details");
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState({ fullName: "", mobile: "" });
-  const [session, setSession] = useState<{ id: string; demoCode: string; mobile: string } | null>(
-    null,
-  );
+  const [session, setSession] = useState<{ id: string; mobile: string } | null>(null);
   const [code, setCode] = useState("");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);

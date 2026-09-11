@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createHash, randomBytes, randomInt } from "crypto";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 
 import { BLOOD_TYPES, COOLDOWN_DAYS, GENDERS, type DonorCard } from "./donor-shared";
@@ -24,9 +24,6 @@ async function admin() {
   return supabaseAdmin;
 }
 
-function sha(value: string) {
-  return createHash("sha256").update(value).digest("hex");
-}
 
 function maskName(name: string) {
   return name
