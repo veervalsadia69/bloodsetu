@@ -133,12 +133,11 @@ function HospitalDashboard() {
           >
             <div className="space-y-1.5">
               <Label htmlFor="hname">Hospital name</Label>
-              <Input
+              <HospitalNameInput
                 id="hname"
-                className="h-12"
                 required
                 value={profile.name}
-                onChange={(event) => setProfile((p) => ({ ...p, name: event.target.value }))}
+                onChange={(value) => setProfile((p) => ({ ...p, name: value }))}
               />
             </div>
             <div className="space-y-1.5">
