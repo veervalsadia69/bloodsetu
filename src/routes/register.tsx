@@ -131,7 +131,7 @@ function RegisterPage() {
                   <Label htmlFor="bloodType">Blood group</Label>
                   <Select value={form.bloodType} onValueChange={set("bloodType")}>
                     <SelectTrigger id="bloodType" className="h-12">
-                      <SelectValue />
+                      <SelectValue>{form.bloodType}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {BLOOD_TYPES.map((type) => (
@@ -174,7 +174,7 @@ function RegisterPage() {
                   <Label htmlFor="gender">Gender</Label>
                   <Select value={form.gender} onValueChange={set("gender")}>
                     <SelectTrigger id="gender" className="h-12">
-                      <SelectValue />
+                      <SelectValue>{form.gender}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {GENDERS.map((option) => (
