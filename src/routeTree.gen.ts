@@ -17,7 +17,6 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as AuthenticatedHospitalRouteImport } from './routes/_authenticated/hospital'
-import { Route as ApiPublicCallInboundRouteImport } from './routes/api/public/call-inbound'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,11 +57,6 @@ const AuthenticatedHospitalRoute = AuthenticatedHospitalRouteImport.update({
   path: '/hospital',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicCallInboundRoute = ApiPublicCallInboundRouteImport.update({
-  id: '/api/public/call-inbound',
-  path: '/api/public/call-inbound',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,7 +66,6 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/hospital': typeof AuthenticatedHospitalRoute
-  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,7 +75,6 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/hospital': typeof AuthenticatedHospitalRoute
-  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,29 +86,14 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/_authenticated/hospital': typeof AuthenticatedHospitalRoute
-  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/admin'
-    | '/auth'
-    | '/register'
-    | '/search'
-    | '/verify'
-    | '/hospital'
-    | '/api/public/call-inbound'
+    '/' | '/admin' | '/auth' | '/register' | '/search' | '/verify' | '/hospital'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/admin'
-    | '/auth'
-    | '/register'
-    | '/search'
-    | '/verify'
-    | '/hospital'
-    | '/api/public/call-inbound'
+    '/' | '/admin' | '/auth' | '/register' | '/search' | '/verify' | '/hospital'
   id:
     | '__root__'
     | '/'
@@ -127,7 +104,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/verify'
     | '/_authenticated/hospital'
-    | '/api/public/call-inbound'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -138,7 +114,6 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   SearchRoute: typeof SearchRoute
   VerifyRoute: typeof VerifyRoute
-  ApiPublicCallInboundRoute: typeof ApiPublicCallInboundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -199,13 +174,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHospitalRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/call-inbound': {
-      id: '/api/public/call-inbound'
-      path: '/api/public/call-inbound'
-      fullPath: '/api/public/call-inbound'
-      preLoaderRoute: typeof ApiPublicCallInboundRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -228,7 +196,6 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   SearchRoute: SearchRoute,
   VerifyRoute: VerifyRoute,
-  ApiPublicCallInboundRoute: ApiPublicCallInboundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
