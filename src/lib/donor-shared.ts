@@ -8,6 +8,7 @@ export const ACCESS_TOKEN_KEY = "bloodsetu.recipient_token";
 
 export type DonorCard = {
   id: string;
+  donorCode: string;
   maskedName: string;
   bloodType: string;
   city: string;

@@ -41,9 +41,11 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const submit = useServerFn(registerDonor);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState<{ available: boolean; nextEligibleDate: string | null } | null>(
-    null,
-  );
+  const [done, setDone] = useState<{
+    donorCode: string;
+    available: boolean;
+    nextEligibleDate: string | null;
+  } | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     bloodType: "O+",
@@ -71,7 +73,11 @@ function RegisterPage() {
           age: Number(form.age),
         },
       });
-      setDone({ available: result.available, nextEligibleDate: result.nextEligibleDate });
+      setDone({
+        donorCode: result.donorCode,
+        available: result.available,
+        nextEligibleDate: result.nextEligibleDate,
+      });
       toast.success("Thank you! You're on the donor list.");
     } catch (error) {
       toast.error(
@@ -92,6 +98,12 @@ function RegisterPage() {
           <div className="surface-card p-8 text-center">
             <CheckCircle2 className="mx-auto size-12 text-success" />
             <h1 className="mt-4 font-display text-2xl font-semibold">You're registered</h1>
+            <div className="mx-auto mt-4 inline-flex flex-col rounded-2xl bg-secondary px-5 py-3">
+              <span className="text-xs text-muted-foreground">Your donor ID</span>
+              <span className="font-mono text-lg font-semibold tracking-wide">
+                {done.donorCode}
+              </span>
+            </div>
             <p className="mt-3 text-sm text-muted-foreground">
               {done.available
                 ? "You are shown as available to verified recipients looking for your blood group nearby."

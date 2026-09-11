@@ -88,6 +88,7 @@ export type Database = {
           city: string
           contact_number: string
           created_at: string
+          donor_code: string
           full_name: string
           gender: string
           id: string
@@ -102,6 +103,7 @@ export type Database = {
           city: string
           contact_number: string
           created_at?: string
+          donor_code?: string
           full_name: string
           gender: string
           id?: string
@@ -116,6 +118,7 @@ export type Database = {
           city?: string
           contact_number?: string
           created_at?: string
+          donor_code?: string
           full_name?: string
           gender?: string
           id?: string
@@ -239,7 +242,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      next_donor_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

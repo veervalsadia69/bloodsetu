@@ -31,6 +31,7 @@ export function DonorResultCard({
             <p className="text-sm text-muted-foreground">
               {donor.age} yrs · {donor.gender}
             </p>
+            <p className="mt-0.5 font-mono text-xs text-muted-foreground">ID {donor.donorCode}</p>
           </div>
         </div>
         {donor.available ? (
