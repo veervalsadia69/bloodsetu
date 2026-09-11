@@ -38,11 +38,13 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
-          {navLinks.map((link) =>
-            link.primary ? (
+          {navLinks.map((link) => {
+            const props = link.search ? { search: link.search } : {};
+            return link.primary ? (
               <Link
                 key={link.to}
                 to={link.to}
+                {...props}
                 className="rounded-lg bg-primary px-4 py-2 text-primary-foreground shadow-soft transition-opacity hover:opacity-90"
               >
                 {link.label}
@@ -51,13 +53,13 @@ export function SiteHeader() {
               <Link
                 key={link.to}
                 to={link.to}
-                search={("search" in link ? link.search : undefined) as Record<string, string> | undefined}
+                {...props}
                 className="rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-secondary-foreground"
               >
                 {link.label}
               </Link>
-            ),
-          )}
+            );
+          })}
         </nav>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -68,11 +70,13 @@ export function SiteHeader() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[260px] p-5 sm:w-[320px]">
             <div className="mt-8 flex flex-col gap-2">
-              {navLinks.map((link) =>
-                link.primary ? (
+              {navLinks.map((link) => {
+                const props = link.search ? { search: link.search } : {};
+                return link.primary ? (
                   <Link
                     key={link.to}
                     to={link.to}
+                    {...props}
                     onClick={() => setOpen(false)}
                     className="rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground shadow-soft transition-opacity hover:opacity-90"
                   >
@@ -82,14 +86,14 @@ export function SiteHeader() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    search={("search" in link ? link.search : undefined) as Record<string, string> | undefined}
+                    {...props}
                     onClick={() => setOpen(false)}
                     className="rounded-xl px-4 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-secondary-foreground"
                   >
                     {link.label}
                   </Link>
-                ),
-              )}
+                );
+              })}
             </div>
           </SheetContent>
         </Sheet>
