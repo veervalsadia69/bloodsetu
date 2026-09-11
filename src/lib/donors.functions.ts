@@ -175,11 +175,15 @@ export const searchDonors = createServerFn({ method: "POST" })
 const startSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
   mobile: phone,
-  aadhaar: z
+  faceImage: z
     .string()
     .trim()
-    .transform((value) => value.replace(/\s|-/g, ""))
-    .refine((value) => /^\d{12}$/.test(value), "Aadhaar must be 12 digits"),
+    .refine(
+      (value) => /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value),
+      "A live camera photo is required",
+    )
+    .refine((value) => value.length > 2000, "The camera photo did not capture correctly")
+    .refine((value) => value.length < 4_000_000, "That photo is too large"),
 });
 
 export const startVerification = createServerFn({ method: "POST" })
@@ -187,13 +191,22 @@ export const startVerification = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const db = await admin();
     const code = String(randomInt(100000, 999999));
+
+    const [meta, base64] = data.faceImage.split(",") as [string, string];
+    const contentType = meta.slice(5, meta.indexOf(";"));
+    const extension = contentType.split("/")[1] ?? "jpg";
+    const path = `${new Date().toISOString().slice(0, 10)}/${randomBytes(12).toString("hex")}.${extension}`;
+    const upload = await db.storage
+      .from("recipient-faces")
+      .upload(path, Buffer.from(base64, "base64"), { contentType, upsert: false });
+    if (upload.error) throw new Error("Could not save your photo. Please try again.");
+
     const { data: row, error } = await db
       .from("recipient_verifications")
       .insert({
         full_name: data.fullName,
         mobile: data.mobile,
-        aadhaar_last4: data.aadhaar.slice(-4),
-        aadhaar_hash: sha(data.aadhaar),
+        face_image_path: path,
         otp_hash: sha(code),
         otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
       })
