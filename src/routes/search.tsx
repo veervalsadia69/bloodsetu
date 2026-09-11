@@ -94,7 +94,7 @@ function SearchPage() {
               onValueChange={(value) => setDraft((prev) => ({ ...prev, blood: value }))}
             >
               <SelectTrigger id="blood" className="h-12">
-                <SelectValue />
+                <SelectValue>{draft.blood}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {BLOOD_TYPES.map((type) => (

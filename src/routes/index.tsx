@@ -73,7 +73,7 @@ function Home() {
                     <Label htmlFor="blood">Blood group needed</Label>
                     <Select value={blood} onValueChange={setBlood}>
                       <SelectTrigger id="blood" className="h-12">
-                        <SelectValue />
+                        <SelectValue>{blood}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {BLOOD_TYPES.map((type) => (
