@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Camera, KeyRound, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { Camera, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ACCESS_TOKEN_KEY, BLOOD_TYPES } from "@/lib/donor-shared";
-import { confirmVerification, startVerification } from "@/lib/donors.functions";
+import { getCaptcha, startVerification } from "@/lib/donors.functions";
 
 type SearchParams = { blood: string; city: string; area: string };
 
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/verify")({
       {
         name: "description",
         content:
-          "Confirm your identity with your name, mobile number, a live camera photo and a one-time code to unlock verified blood donor contact details.",
+          "Confirm your identity with your name, mobile number, a live camera photo and a quick in-app security check to unlock verified blood donor contact details.",
       },
       { property: "og:title", content: "Recipient Verification — BloodSetu" },
       {
@@ -43,19 +43,31 @@ function VerifyPage() {
   const params = Route.useSearch();
   const navigate = useNavigate();
   const start = useServerFn(startVerification);
-  const confirm = useServerFn(confirmVerification);
+  const newCaptcha = useServerFn(getCaptcha);
 
-  const [step, setStep] = useState<"details" | "otp">("details");
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState({ fullName: "", mobile: "" });
-  const [session, setSession] = useState<{ id: string; mobile: string } | null>(null);
-  const [code, setCode] = useState("");
+  const [captcha, setCaptcha] = useState<{ question: string; challenge: string } | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+
+  const refreshCaptcha = useCallback(async () => {
+    setCaptchaAnswer("");
+    try {
+      setCaptcha(await newCaptcha());
+    } catch {
+      setCaptcha(null);
+    }
+  }, [newCaptcha]);
+
+  useEffect(() => {
+    void refreshCaptcha();
+  }, [refreshCaptcha]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -118,36 +130,32 @@ function VerifyPage() {
     );
   }
 
-  async function sendCode(event?: React.FormEvent) {
-    event?.preventDefault();
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     if (!photo) {
       toast.error("Please take a live photo with your camera to continue.");
       return;
     }
-    setBusy(true);
-    try {
-      const result = await start({ data: { ...details, faceImage: photo } });
-      setSession({ id: result.verificationId, mobile: result.mobile });
-      setStep("otp");
-      toast.success(`Code sent by SMS to ${result.mobile}`);
-    } catch (error) {
-      showError(error);
-    } finally {
-      setBusy(false);
+    if (!captcha) {
+      toast.error("Security check could not load. Please refresh it and try again.");
+      return;
     }
-  }
-
-  async function submitCode(event: React.FormEvent) {
-    event.preventDefault();
-    if (!session) return;
     setBusy(true);
     try {
-      const result = await confirm({ data: { verificationId: session.id, code } });
+      const result = await start({
+        data: {
+          ...details,
+          faceImage: photo,
+          captchaChallenge: captcha.challenge,
+          captchaAnswer,
+        },
+      });
       localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
       toast.success("Verified. Donor contacts unlocked.");
       navigate({ to: "/search", search: params });
     } catch (error) {
       showError(error);
+      void refreshCaptcha();
     } finally {
       setBusy(false);
     }
@@ -158,7 +166,7 @@ function VerifyPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl px-4 py-10 sm:px-6">
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-soft">
-          <ShieldCheck className="size-3.5 text-primary" /> Step {step === "details" ? "1" : "2"} of 2
+          <ShieldCheck className="size-3.5 text-primary" /> One-time check
         </span>
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">Recipient verification</h1>
         <p className="mt-3 text-muted-foreground">
@@ -166,8 +174,7 @@ function VerifyPage() {
           and contact details stay unlocked for 7 days.
         </p>
 
-        {step === "details" ? (
-          <form onSubmit={sendCode} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
+        <form onSubmit={submit} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
             <div className="space-y-1.5">
               <Label htmlFor="fullName">Your full name</Label>
               <Input
@@ -249,60 +256,47 @@ function VerifyPage() {
               {cameraError && <p className="text-xs text-destructive">{cameraError}</p>}
             </div>
 
-            <Button type="submit" size="lg" className="h-12" disabled={busy || !photo}>
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              {busy ? "Sending code" : "Send one-time code"}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={submitCode} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
-            <div className="flex items-center gap-3 rounded-2xl bg-accent/20 p-4 text-sm">
-              <KeyRound className="size-5 shrink-0 text-accent-foreground" />
-              <p className="text-accent-foreground">
-                We texted a 6-digit code to{" "}
-                <strong className="font-display">+91 {session?.mobile}</strong>. It expires in 10
-                minutes — check your messages.
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="code">Enter the 6-digit code</Label>
+            <div className="space-y-2">
+              <Label htmlFor="captcha">Security check</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 flex-1 items-center justify-center rounded-xl border border-border bg-muted font-display text-lg tracking-widest select-none">
+                  {captcha ? `${captcha.question} = ?` : "Loading…"}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-12"
+                  disabled={busy}
+                  onClick={() => void refreshCaptcha()}
+                  aria-label="Get a new security check"
+                >
+                  <RefreshCw className="size-4" />
+                </Button>
+              </div>
               <Input
-                id="code"
+                id="captcha"
                 required
                 inputMode="numeric"
-                maxLength={6}
-                className="h-14 text-center font-display text-xl tracking-[0.5em]"
-                value={code}
-                onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                className="h-12"
+                placeholder="Type the answer"
+                value={captchaAnswer}
+                onChange={(event) => setCaptchaAnswer(event.target.value.replace(/[^\d-]/g, ""))}
               />
+              <p className="text-xs text-muted-foreground">
+                No code by SMS — just solve this quick check to prove you are a real person.
+              </p>
             </div>
-            <Button type="submit" size="lg" className="h-12" disabled={busy}>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12"
+              disabled={busy || !photo || !captcha || !captchaAnswer}
+            >
               {busy && <Loader2 className="size-4 animate-spin" />}
               {busy ? "Verifying" : "Verify and see donors"}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy}
-              onClick={() => {
-                setCode("");
-                void sendCode();
-              }}
-            >
-              <RefreshCw className="size-4" /> Resend code
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setStep("details");
-                setCode("");
-              }}
-            >
-              Change my details
-            </Button>
-          </form>
-        )}
+        </form>
       </main>
       <SiteFooter />
     </div>
