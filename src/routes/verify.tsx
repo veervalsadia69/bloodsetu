@@ -282,6 +282,17 @@ function VerifyPage() {
             </Button>
             <Button
               type="button"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                setCode("");
+                void sendCode();
+              }}
+            >
+              <RefreshCw className="size-4" /> Resend code
+            </Button>
+            <Button
+              type="button"
               variant="ghost"
               onClick={() => {
                 setStep("details");
