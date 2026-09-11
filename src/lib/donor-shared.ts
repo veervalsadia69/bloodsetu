@@ -8,6 +8,7 @@ export const ACCESS_TOKEN_KEY = "raktsetu.recipient_token";
 
 export type DonorCard = {
   id: string;
+  maskedName: string;
   bloodType: string;
   city: string;
   neighborhood: string;
