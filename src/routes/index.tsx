@@ -69,11 +69,14 @@ function Home() {
               <div className="surface-card mt-8 p-4 sm:p-5">
                 <form
                   className="grid gap-4 sm:grid-cols-2"
+                  action="/verify"
+                  method="get"
                   onSubmit={(event) => {
                     event.preventDefault();
                     goToVerify();
                   }}
                 >
+                  <input type="hidden" name="blood" value={blood} />
                   <div className="space-y-1.5">
                     <Label htmlFor="blood">Blood group needed</Label>
                     <Select value={blood} onValueChange={setBlood}>
