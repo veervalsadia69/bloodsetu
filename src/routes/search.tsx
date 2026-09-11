@@ -54,8 +54,26 @@ function SearchPage() {
   const params = Route.useSearch();
   const navigate = useNavigate();
   const run = useServerFn(searchDonors);
+  const call = useServerFn(callDonor);
   const [token, setToken] = useState("");
   const [draft, setDraft] = useState(params);
+  const [callingId, setCallingId] = useState<string | null>(null);
+
+  async function handleCall(donorId: string) {
+    setCallingId(donorId);
+    try {
+      await call({ data: { token, donorId } });
+      toast.success("Calling your phone now — answer and we'll connect you to the donor.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message.length < 160
+          ? error.message
+          : "The call could not be placed. Please try again.",
+      );
+    } finally {
+      setCallingId(null);
+    }
+  }
 
   useEffect(() => setDraft(params), [params]);
   useEffect(() => {
@@ -185,7 +203,12 @@ function SearchPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {donors.map((donor) => (
-                <DonorResultCard key={donor.id} donor={donor} />
+                <DonorResultCard
+                  key={donor.id}
+                  donor={donor}
+                  onCall={handleCall}
+                  calling={callingId === donor.id}
+                />
               ))}
             </div>
           )}
