@@ -206,16 +206,18 @@ export const startVerification = createServerFn({ method: "POST" })
         full_name: data.fullName,
         mobile: data.mobile,
         face_image_path: path,
-        otp_hash: sha(code),
+        otp_hash: null,
         otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
       })
       .select("id")
       .single();
     if (error || !row) throw new Error("Could not start verification. Please try again.");
 
-    // No SMS provider is connected yet, so the code is returned to the screen
-    // in demo mode. Swap this for an SMS send once a provider is added.
-    return { verificationId: row.id as string, demoCode: code, mobile: data.mobile };
+    // The code itself is generated, texted and checked by the SMS provider, so
+    // it is never stored in our database or returned to the browser.
+    await sendSmsCode(data.mobile);
+
+    return { verificationId: row.id as string, mobile: data.mobile };
   });
 
 const confirmSchema = z.object({
@@ -227,9 +229,10 @@ export const confirmVerification = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => confirmSchema.parse(data))
   .handler(async ({ data }) => {
     const db = await admin();
+    const { checkSmsCode } = await import("./twilio.server");
     const { data: row } = await db
       .from("recipient_verifications")
-      .select("id, otp_hash, otp_expires_at, attempts, verified, access_token")
+      .select("id, mobile, otp_expires_at, attempts, verified, access_token")
       .eq("id", data.verificationId)
       .maybeSingle();
     if (!row) throw new Error("Verification request not found. Please start again.");
@@ -237,7 +240,7 @@ export const confirmVerification = createServerFn({ method: "POST" })
     if (new Date(row.otp_expires_at).getTime() < Date.now())
       throw new Error("This code has expired. Please request a new one.");
 
-    if (sha(data.code) !== row.otp_hash) {
+    if (!(await checkSmsCode(row.mobile, data.code))) {
       await db
         .from("recipient_verifications")
         .update({ attempts: row.attempts + 1 })
