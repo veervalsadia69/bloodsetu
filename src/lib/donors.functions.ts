@@ -61,7 +61,6 @@ function toCard(row: DonorRow, reveal: boolean): DonorCard & { maskedName: strin
   return {
     ...base,
     fullName: row.full_name,
-    contactNumber: row.contact_number,
     medicalConditions: row.medical_conditions,
     lastDonationDate: row.last_donation_date,
   };

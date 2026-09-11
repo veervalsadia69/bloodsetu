@@ -1,11 +1,19 @@
-import { Lock, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { Loader2, Lock, MapPin, PhoneCall, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, type DonorCard as Donor } from "@/lib/donor-shared";
 
-export function DonorResultCard({ donor }: { donor: Donor }) {
-  const revealed = Boolean(donor.contactNumber);
+export function DonorResultCard({
+  donor,
+  onCall,
+  calling,
+}: {
+  donor: Donor;
+  onCall?: (donorId: string) => void;
+  calling?: boolean;
+}) {
+  const revealed = Boolean(donor.fullName);
 
   return (
     <article className="surface-card flex flex-col gap-4 p-5 transition-shadow hover:shadow-lift">
@@ -53,18 +61,21 @@ export function DonorResultCard({ donor }: { donor: Donor }) {
             <p className="text-muted-foreground">Last donation</p>
             <p className="font-medium">{formatDate(donor.lastDonationDate)}</p>
           </div>
-          <Button asChild className="w-full">
-            <a href={`tel:+91${donor.contactNumber}`}>
-              <Phone className="size-4" /> Call +91 {donor.contactNumber}
-            </a>
+          <Button className="w-full" disabled={calling} onClick={() => onCall?.(donor.id)}>
+            {calling ? <Loader2 className="size-4 animate-spin" /> : <PhoneCall className="size-4" />}
+            {calling ? "Connecting you…" : "Call donor — number stays private"}
           </Button>
+          <p className="text-xs text-muted-foreground">
+            Your phone will ring first; answer it and we'll connect you. The donor never sees your
+            number and you never see theirs.
+          </p>
         </div>
       ) : (
         <div className="flex items-center gap-2 border-t border-border pt-4 text-sm text-muted-foreground">
           {donor.available ? (
             <>
               <Lock className="size-4 shrink-0" />
-              <span>Name and phone unlock after verification</span>
+              <span>Name and calling unlock after verification</span>
             </>
           ) : (
             <>

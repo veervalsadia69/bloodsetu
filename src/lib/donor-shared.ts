@@ -17,8 +17,9 @@ export type DonorCard = {
   available: boolean;
   nextEligibleDate: string | null;
   // Only present once the recipient has completed OTP verification.
+  // The phone number is never sent to the browser — calls go through a
+  // masked bridge so neither side sees the other's number.
   fullName?: string;
-  contactNumber?: string;
   medicalConditions?: string | null;
   lastDonationDate?: string | null;
 };
