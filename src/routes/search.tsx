@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { callDonor, recentContacts } from "@/lib/calls.functions";
 import { ACCESS_TOKEN_KEY, BLOOD_TYPES } from "@/lib/donor-shared";
-import { searchDonors } from "@/lib/donors.functions";
+import { searchDonors, searchHospitalStock } from "@/lib/donors.functions";
 
 type SearchParams = { blood: string; city: string; area: string };
 
@@ -107,6 +107,13 @@ function SearchPage() {
     enabled: Boolean(token) && Boolean(query.data?.verified),
   });
   const recent = recentQuery.data?.contacts ?? [];
+
+  const runStock = useServerFn(searchHospitalStock);
+  const stockQuery = useQuery({
+    queryKey: ["hospital-stock", params.blood, params.city],
+    queryFn: () => runStock({ data: { bloodType: params.blood as never, city: params.city } }),
+  });
+  const stockedHospitals = stockQuery.data?.hospitals ?? [];
 
   const verified = token ? query.data?.verified !== false : false;
 
