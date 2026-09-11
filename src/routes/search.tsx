@@ -67,8 +67,8 @@ function SearchPage() {
     try {
       const result = await call({ data: { token, donorId } });
       queryClient.invalidateQueries({ queryKey: ["recent-contacts", token] });
-      toast.success("Opening your dial pad with a private number that connects you to the donor.");
-      window.location.href = `tel:${result.bridgeNumber}`;
+      toast.success("Opening your dial pad with the donor's number.");
+      window.location.href = `tel:${result.phone}`;
     } catch (error) {
       toast.error(
         error instanceof Error && error.message.length < 160

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      blood_stock: {
+        Row: {
+          blood_type: string
+          created_at: string
+          hospital_id: string
+          id: string
+          units: number
+          updated_at: string
+        }
+        Insert: {
+          blood_type: string
+          created_at?: string
+          hospital_id: string
+          id?: string
+          units?: number
+          updated_at?: string
+        }
+        Update: {
+          blood_type?: string
+          created_at?: string
+          hospital_id?: string
+          id?: string
+          units?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blood_stock_hospital_id_fkey"
+            columns: ["hospital_id"]
+            isOneToOne: false
+            referencedRelation: "hospitals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_bridge_sessions: {
         Row: {
           created_at: string
@@ -88,6 +123,36 @@ export type Database = {
           last_donation_date?: string | null
           medical_conditions?: string | null
           neighborhood?: string
+        }
+        Relationships: []
+      }
+      hospitals: {
+        Row: {
+          city: string
+          contact_number: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          contact_number?: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          contact_number?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
