@@ -28,7 +28,7 @@ async function handler({ request }: { request: Request }) {
     !secret ||
     !/^[0-9a-f-]{36}$/i.test(donorId) ||
     !/^\+[1-9]\d{6,14}$/.test(fromNumber) ||
-    sig !== expectedSignature(donorId, secret)
+    sig !== (await expectedSignature(donorId, secret))
   ) {
     return new Response("Forbidden", { status: 403 });
   }

@@ -88,7 +88,7 @@ export const callDonor = createServerFn({ method: "POST" })
       new URLSearchParams({
         To: `+91${recipient.mobile}`,
         From: fromNumber,
-        Url: signedBridgeUrl(donor.id, fromNumber),
+        Url: await signedBridgeUrl(donor.id, fromNumber),
         Timeout: "20",
       }),
     );
