@@ -61,11 +61,10 @@ export type Database = {
       }
       recipient_verifications: {
         Row: {
-          aadhaar_hash: string
-          aadhaar_last4: string
           access_token: string | null
           attempts: number
           created_at: string
+          face_image_path: string | null
           full_name: string
           id: string
           mobile: string
@@ -75,11 +74,10 @@ export type Database = {
           verified: boolean
         }
         Insert: {
-          aadhaar_hash: string
-          aadhaar_last4: string
           access_token?: string | null
           attempts?: number
           created_at?: string
+          face_image_path?: string | null
           full_name: string
           id?: string
           mobile: string
@@ -89,11 +87,10 @@ export type Database = {
           verified?: boolean
         }
         Update: {
-          aadhaar_hash?: string
-          aadhaar_last4?: string
           access_token?: string | null
           attempts?: number
           created_at?: string
+          face_image_path?: string | null
           full_name?: string
           id?: string
           mobile?: string
