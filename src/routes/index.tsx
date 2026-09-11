@@ -103,7 +103,15 @@ function Home() {
                       onChange={(event) => setArea(event.target.value)}
                     />
                   </div>
-                  <Button type="submit" size="lg" className="h-12 sm:col-span-2">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="h-12 sm:col-span-2"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      goToVerify();
+                    }}
+                  >
                     <Search className="size-4" /> Find donors — verify to contact
                   </Button>
                 </form>
