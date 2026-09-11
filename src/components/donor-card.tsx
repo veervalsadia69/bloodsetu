@@ -1,0 +1,79 @@
+import { Lock, MapPin, Phone, ShieldCheck } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDate, type DonorCard as Donor } from "@/lib/donor-shared";
+
+export function DonorResultCard({ donor }: { donor: Donor }) {
+  const revealed = Boolean(donor.contactNumber);
+
+  return (
+    <article className="surface-card flex flex-col gap-4 p-5 transition-shadow hover:shadow-lift">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary font-display text-base font-semibold text-secondary-foreground">
+            {donor.bloodType}
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate font-display text-base font-semibold">
+              {donor.fullName ?? donor.maskedName}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {donor.age} yrs · {donor.gender}
+            </p>
+          </div>
+        </div>
+        {donor.available ? (
+          <Badge variant="success">Available</Badge>
+        ) : (
+          <Badge variant="muted">Unavailable</Badge>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <MapPin className="size-4 shrink-0 text-primary" />
+        <span className="truncate">
+          {donor.neighborhood}, {donor.city}
+        </span>
+      </div>
+
+      {!donor.available && donor.nextEligibleDate && (
+        <p className="rounded-xl bg-secondary px-3 py-2 text-sm text-secondary-foreground">
+          Resting after a recent donation. Eligible again on {formatDate(donor.nextEligibleDate)}.
+        </p>
+      )}
+
+      {revealed ? (
+        <div className="space-y-3 border-t border-border pt-4">
+          <div className="text-sm">
+            <p className="text-muted-foreground">Health notes</p>
+            <p className="font-medium">{donor.medicalConditions || "None reported"}</p>
+          </div>
+          <div className="text-sm">
+            <p className="text-muted-foreground">Last donation</p>
+            <p className="font-medium">{formatDate(donor.lastDonationDate)}</p>
+          </div>
+          <Button asChild className="w-full">
+            <a href={`tel:+91${donor.contactNumber}`}>
+              <Phone className="size-4" /> Call +91 {donor.contactNumber}
+            </a>
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 border-t border-border pt-4 text-sm text-muted-foreground">
+          {donor.available ? (
+            <>
+              <Lock className="size-4 shrink-0" />
+              <span>Name and phone unlock after verification</span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="size-4 shrink-0" />
+              <span>Contact hidden while resting</span>
+            </>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
