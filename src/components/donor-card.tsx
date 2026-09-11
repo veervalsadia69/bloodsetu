@@ -8,10 +8,12 @@ export function DonorResultCard({
   donor,
   onCall,
   calling,
+  onUnlock,
 }: {
   donor: Donor;
   onCall?: (donorId: string) => void;
   calling?: boolean;
+  onUnlock?: () => void;
 }) {
   const revealed = Boolean(donor.fullName);
 
