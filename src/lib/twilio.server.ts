@@ -33,11 +33,66 @@ export async function twilioForm(
   return { ok: response.ok, status: response.status, body };
 }
 
-function verifyServiceSid() {
-  const sid = process.env["TWILIO_VERIFY_SERVICE_SID"];
-  if (!sid) throw new Error("Text messaging is not configured yet. Please try again soon.");
+let cachedAccountSid: string | undefined;
+
+/** Fetches (and caches) the connected Twilio account SID. */
+export async function twilioAccountSid() {
+  if (cachedAccountSid) return cachedAccountSid;
+  const result = await twilioForm("/2010-04-01/Accounts.json", "GET");
+  const accounts = result.body["accounts"] as { sid: string }[] | undefined;
+  const sid = accounts?.[0]?.sid;
+  if (!result.ok || !sid) throw new Error("Calling is not connected yet. Please try again soon.");
+  cachedAccountSid = sid;
   return sid;
 }
+
+let cachedVoiceNumber: string | undefined;
+
+/** Returns the first voice-capable number on the account (used as the caller ID). */
+export async function twilioVoiceNumber() {
+  if (cachedVoiceNumber) return cachedVoiceNumber;
+  const sid = await twilioAccountSid();
+  const result = await twilioForm(
+    `/2010-04-01/Accounts/${sid}/IncomingPhoneNumbers.json?VoiceEnabled=true&PageSize=20`,
+    "GET",
+  );
+  const numbers = result.body["incoming_phone_numbers"] as
+    | { phone_number: string; capabilities?: { voice?: boolean } }[]
+    | undefined;
+  const number =
+    numbers?.find((n) => n.capabilities?.voice !== false)?.phone_number ??
+    numbers?.[0]?.phone_number;
+  if (!result.ok || !number) {
+    throw new Error(
+      "No calling number is set up on the connected account yet. Add a voice-capable number and try again.",
+    );
+  }
+  cachedVoiceNumber = number;
+  return number;
+}
+
+/** Places an outbound call; when answered Twilio fetches TwiML from `answerUrl`. */
+export async function twilioCreateCall(toE164: string, answerUrl: string) {
+  const sid = await twilioAccountSid();
+  const from = await twilioVoiceNumber();
+  const result = await twilioForm(
+    `/2010-04-01/Accounts/${sid}/Calls.json`,
+    "POST",
+    new URLSearchParams({ To: toE164, From: from, Url: answerUrl, Timeout: "25" }),
+  );
+  if (!result.ok) {
+    const message = String(result.body["message"] ?? "");
+    if (result.body["code"] === 21608 || /verified/i.test(message)) {
+      throw new Error(
+        "The calling account is still on a trial plan, so it can only call approved test numbers. Upgrade the calling account to ring any phone.",
+      );
+    }
+    throw new Error("We could not place the call right now. Please try again in a moment.");
+  }
+  return { from, sid: String(result.body["sid"] ?? "") };
+}
+
+function verifyServiceSid() {
 
 /** Sends a one-time code by SMS to an Indian mobile number. */
 export async function sendSmsCode(mobile10: string) {
