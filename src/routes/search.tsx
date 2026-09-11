@@ -5,6 +5,7 @@ import { Loader2, ShieldCheck, Search as SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { CityInput } from "@/components/city-input";
 import { DonorResultCard } from "@/components/donor-card";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -127,12 +128,11 @@ function SearchPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="city">City</Label>
-            <Input
+            <CityInput
               id="city"
-              className="h-12"
               placeholder="Any city"
               value={draft.city}
-              onChange={(event) => setDraft((prev) => ({ ...prev, city: event.target.value }))}
+              onChange={(value) => setDraft((prev) => ({ ...prev, city: value }))}
             />
           </div>
           <div className="space-y-1.5">
