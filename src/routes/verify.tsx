@@ -256,60 +256,47 @@ function VerifyPage() {
               {cameraError && <p className="text-xs text-destructive">{cameraError}</p>}
             </div>
 
-            <Button type="submit" size="lg" className="h-12" disabled={busy || !photo}>
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              {busy ? "Sending code" : "Send one-time code"}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={submitCode} className="surface-card mt-8 grid gap-5 p-5 sm:p-7">
-            <div className="flex items-center gap-3 rounded-2xl bg-accent/20 p-4 text-sm">
-              <KeyRound className="size-5 shrink-0 text-accent-foreground" />
-              <p className="text-accent-foreground">
-                We texted a 6-digit code to{" "}
-                <strong className="font-display">+91 {session?.mobile}</strong>. It expires in 10
-                minutes — check your messages.
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="code">Enter the 6-digit code</Label>
+            <div className="space-y-2">
+              <Label htmlFor="captcha">Security check</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 flex-1 items-center justify-center rounded-xl border border-border bg-muted font-display text-lg tracking-widest select-none">
+                  {captcha ? `${captcha.question} = ?` : "Loading…"}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-12"
+                  disabled={busy}
+                  onClick={() => void refreshCaptcha()}
+                  aria-label="Get a new security check"
+                >
+                  <RefreshCw className="size-4" />
+                </Button>
+              </div>
               <Input
-                id="code"
+                id="captcha"
                 required
                 inputMode="numeric"
-                maxLength={6}
-                className="h-14 text-center font-display text-xl tracking-[0.5em]"
-                value={code}
-                onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                className="h-12"
+                placeholder="Type the answer"
+                value={captchaAnswer}
+                onChange={(event) => setCaptchaAnswer(event.target.value.replace(/[^\d-]/g, ""))}
               />
+              <p className="text-xs text-muted-foreground">
+                No code by SMS — just solve this quick check to prove you are a real person.
+              </p>
             </div>
-            <Button type="submit" size="lg" className="h-12" disabled={busy}>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12"
+              disabled={busy || !photo || !captcha || !captchaAnswer}
+            >
               {busy && <Loader2 className="size-4 animate-spin" />}
               {busy ? "Verifying" : "Verify and see donors"}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy}
-              onClick={() => {
-                setCode("");
-                void sendCode();
-              }}
-            >
-              <RefreshCw className="size-4" /> Resend code
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setStep("details");
-                setCode("");
-              }}
-            >
-              Change my details
-            </Button>
-          </form>
-        )}
+        </form>
       </main>
       <SiteFooter />
     </div>
