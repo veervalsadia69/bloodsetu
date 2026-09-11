@@ -107,6 +107,8 @@ function SearchPage() {
   });
   const recent = recentQuery.data?.contacts ?? [];
 
+  const verified = token ? query.data?.verified !== false : false;
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -115,7 +117,11 @@ function SearchPage() {
           className="surface-card grid gap-4 p-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end sm:p-5"
           onSubmit={(event) => {
             event.preventDefault();
-            navigate({ to: "/search", search: draft });
+            if (verified) {
+              navigate({ to: "/search", search: draft });
+            } else {
+              navigate({ to: "/verify", search: draft });
+            }
           }}
         >
           <div className="space-y-1.5">
@@ -156,7 +162,7 @@ function SearchPage() {
             />
           </div>
           <Button type="submit" size="lg" className="h-12">
-            <SearchIcon className="size-4" /> Search
+            <SearchIcon className="size-4" /> {verified ? "Search" : "Login to search donors"}
           </Button>
         </form>
 
