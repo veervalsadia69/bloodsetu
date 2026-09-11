@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createHmac } from "crypto";
 import { z } from "zod";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
@@ -9,14 +8,15 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
 // domain URL once the app is published.
 const PUBLIC_BASE_URL = "https://id-preview--883202d5-9652-4d6a-bb12-413feb0379b9.lovable.app";
 
-function bridgeSignature(donorId: string) {
+async function bridgeSignature(donorId: string) {
+  const { createHmac } = await import("crypto");
   const secret = process.env["CALL_BRIDGE_SECRET"];
   if (!secret) throw new Error("Call bridge is not configured yet.");
   return createHmac("sha256", secret).update(donorId).digest("hex").slice(0, 32);
 }
 
-export function signedBridgeUrl(donorId: string, fromNumber: string) {
-  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&from=${encodeURIComponent(fromNumber)}&sig=${bridgeSignature(donorId)}`;
+async function signedBridgeUrl(donorId: string, fromNumber: string) {
+  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&from=${encodeURIComponent(fromNumber)}&sig=${await bridgeSignature(donorId)}`;
 }
 
 async function twilioRequest(path: string, method: "GET" | "POST", form?: URLSearchParams) {
