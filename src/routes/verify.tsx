@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { Camera, KeyRound, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteFooter, SiteHeader } from "@/components/site-header";
@@ -23,13 +23,13 @@ export const Route = createFileRoute("/verify")({
   }),
   head: () => ({
     meta: [
-      { title: "Recipient Verification — Unlock Donor Contacts | RaktSetu" },
+      { title: "Recipient Verification — Unlock Donor Contacts | BloodSetu" },
       {
         name: "description",
         content:
-          "Confirm your identity with your name, Aadhaar number, mobile number and a one-time code to unlock verified blood donor contact details.",
+          "Confirm your identity with your name, mobile number, a live camera photo and a one-time code to unlock verified blood donor contact details.",
       },
-      { property: "og:title", content: "Recipient Verification — RaktSetu" },
+      { property: "og:title", content: "Recipient Verification — BloodSetu" },
       {
         property: "og:description",
         content: "A one-time identity check that protects donor privacy before contact is shared.",
@@ -47,15 +47,74 @@ function VerifyPage() {
 
   const [step, setStep] = useState<"details" | "otp">("details");
   const [busy, setBusy] = useState(false);
-  const [details, setDetails] = useState({ fullName: "", mobile: "", aadhaar: "" });
+  const [details, setDetails] = useState({ fullName: "", mobile: "" });
   const [session, setSession] = useState<{ id: string; demoCode: string; mobile: string } | null>(
     null,
   );
   const [code, setCode] = useState("");
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setCameraOn(false);
+  }, []);
+
+  useEffect(() => stopCamera, [stopCamera]);
+
+  async function openCamera() {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setCameraOn(true);
+      setPhoto(null);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => undefined);
+      }
+    } catch {
+      setCameraError(
+        "We could not open your camera. Allow camera access in your browser, then try again. A live photo is required — uploads are not accepted.",
+      );
+    }
+  }
+
+  function capture() {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = 480;
+    canvas.height = 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(
+      video,
+      (video.videoWidth - size) / 2,
+      (video.videoHeight - size) / 2,
+      size,
+      size,
+      0,
+      0,
+      480,
+      480,
+    );
+    setPhoto(canvas.toDataURL("image/jpeg", 0.85));
+    stopCamera();
+  }
+
   function showError(error: unknown) {
     toast.error(
-      error instanceof Error && error.message.length < 160
+      error instanceof Error && error.message.length < 200
         ? error.message
         : "Please check your details and try again.",
     );
@@ -63,9 +122,13 @@ function VerifyPage() {
 
   async function sendCode(event?: React.FormEvent) {
     event?.preventDefault();
+    if (!photo) {
+      toast.error("Please take a live photo with your camera to continue.");
+      return;
+    }
     setBusy(true);
     try {
-      const result = await start({ data: details });
+      const result = await start({ data: { ...details, faceImage: photo } });
       setSession({ id: result.verificationId, demoCode: result.demoCode, mobile: result.mobile });
       setStep("otp");
       toast.success("One-time code generated");
@@ -101,8 +164,8 @@ function VerifyPage() {
         </span>
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">Recipient verification</h1>
         <p className="mt-3 text-muted-foreground">
-          Donors trust RaktSetu because their details are never public. Confirm who you are once, and
-          contact details stay unlocked for 7 days.
+          Donors trust BloodSetu because their details are never public. Confirm who you are once,
+          and contact details stay unlocked for 7 days.
         </p>
 
         {step === "details" ? (
@@ -120,23 +183,6 @@ function VerifyPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="aadhaar">Aadhaar number</Label>
-              <Input
-                id="aadhaar"
-                required
-                inputMode="numeric"
-                className="h-12"
-                placeholder="12 digits"
-                value={details.aadhaar}
-                onChange={(event) =>
-                  setDetails((prev) => ({ ...prev, aadhaar: event.target.value }))
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                We store only the last 4 digits plus a scrambled fingerprint — never the full number.
-              </p>
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="mobile">Mobile number</Label>
               <Input
                 id="mobile"
@@ -148,7 +194,64 @@ function VerifyPage() {
                 onChange={(event) => setDetails((prev) => ({ ...prev, mobile: event.target.value }))}
               />
             </div>
-            <Button type="submit" size="lg" className="h-12" disabled={busy}>
+
+            <div className="space-y-2">
+              <Label>Live photo (required)</Label>
+              <div className="overflow-hidden rounded-2xl border border-border bg-muted">
+                <div className="relative aspect-square w-full">
+                  {photo ? (
+                    <img src={photo} alt="Your captured photo" className="size-full object-cover" />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      playsInline
+                      muted
+                      autoPlay
+                      className={`size-full object-cover ${cameraOn ? "" : "hidden"}`}
+                    />
+                  )}
+                  {!photo && !cameraOn && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+                      <Camera className="size-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Take a live photo of your face with your device camera.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {!cameraOn && !photo && (
+                  <Button type="button" variant="secondary" onClick={openCamera}>
+                    <Camera className="size-4" /> Open camera
+                  </Button>
+                )}
+                {cameraOn && (
+                  <Button type="button" onClick={capture}>
+                    <Camera className="size-4" /> Take photo
+                  </Button>
+                )}
+                {photo && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setPhoto(null);
+                      void openCamera();
+                    }}
+                  >
+                    <RefreshCw className="size-4" /> Retake photo
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Only a live camera photo is accepted — gallery uploads are not allowed. Your photo is
+                stored privately and used only to keep donors safe.
+              </p>
+              {cameraError && <p className="text-xs text-destructive">{cameraError}</p>}
+            </div>
+
+            <Button type="submit" size="lg" className="h-12" disabled={busy || !photo}>
               {busy && <Loader2 className="size-4 animate-spin" />}
               {busy ? "Sending code" : "Send one-time code"}
             </Button>
