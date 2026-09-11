@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { CityInput } from "@/components/city-input";
+import { HospitalNameInput } from "@/components/hospital-name-input";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,12 +133,11 @@ function HospitalDashboard() {
           >
             <div className="space-y-1.5">
               <Label htmlFor="hname">Hospital name</Label>
-              <Input
+              <HospitalNameInput
                 id="hname"
-                className="h-12"
                 required
                 value={profile.name}
-                onChange={(event) => setProfile((p) => ({ ...p, name: event.target.value }))}
+                onChange={(value) => setProfile((p) => ({ ...p, name: value }))}
               />
             </div>
             <div className="space-y-1.5">
