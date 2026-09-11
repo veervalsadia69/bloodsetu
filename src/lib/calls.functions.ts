@@ -15,8 +15,8 @@ function bridgeSignature(donorId: string) {
   return createHmac("sha256", secret).update(donorId).digest("hex").slice(0, 32);
 }
 
-export function signedBridgeUrl(donorId: string) {
-  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&sig=${bridgeSignature(donorId)}`;
+export function signedBridgeUrl(donorId: string, fromNumber: string) {
+  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&from=${encodeURIComponent(fromNumber)}&sig=${bridgeSignature(donorId)}`;
 }
 
 async function twilioRequest(path: string, method: "GET" | "POST", form?: URLSearchParams) {
@@ -88,7 +88,7 @@ export const callDonor = createServerFn({ method: "POST" })
       new URLSearchParams({
         To: `+91${recipient.mobile}`,
         From: fromNumber,
-        Url: signedBridgeUrl(donor.id),
+        Url: signedBridgeUrl(donor.id, fromNumber),
         Timeout: "20",
       }),
     );
