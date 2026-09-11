@@ -29,7 +29,8 @@ export const callDonor = createServerFn({ method: "POST" })
       throw new Error("Please verify your identity again before calling a donor.");
     }
 
-    // The donor's number is read server-side only and never sent to the browser.
+    // The donor's number is read server-side and released only to this
+    // verified recipient, who is then sent to their phone's dial pad.
     const { data: donor } = await db
       .from("donors")
       .select("id, contact_number, is_active")
@@ -38,32 +39,13 @@ export const callDonor = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!donor) throw new Error("This donor is no longer listed.");
 
-    const numbers = await twilioRequest("/IncomingPhoneNumbers.json?PageSize=1", "GET");
-    const fromNumber = numbers?.incoming_phone_numbers?.[0]?.phone_number as string | undefined;
-    if (!fromNumber) {
-      throw new Error("Calling is not fully set up yet. Please try again soon.");
-    }
-
-    // Ring the recipient first; when they answer, Twilio fetches the bridge
-    // URL which dials the donor — so neither side ever sees the other's number.
-    await twilioRequest(
-      "/Calls.json",
-      "POST",
-      new URLSearchParams({
-        To: `+91${recipient.mobile}`,
-        From: fromNumber,
-        Url: await signedBridgeUrl(donor.id, fromNumber),
-        Timeout: "20",
-      }),
-    );
-
     // Record the contact so the recipient can see their recently called donors.
     await db.from("recipient_contact_logs").insert({
       recipient_verification_id: recipient.id,
       donor_id: donor.id,
     });
 
-    return { ok: true as const };
+    return { ok: true as const, phone: `+91${donor.contact_number}` };
   });
 
 /** The recipient's own log of the donors they contacted most recently. */
