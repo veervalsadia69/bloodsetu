@@ -1,47 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
-
-// Public base URL Twilio can reach to fetch the call-bridge TwiML.
-// The preview URL serves the latest build; update to the published/custom
-// domain URL once the app is published.
-const PUBLIC_BASE_URL = "https://id-preview--883202d5-9652-4d6a-bb12-413feb0379b9.lovable.app";
-
-async function bridgeSignature(donorId: string) {
-  const { createHmac } = await import("crypto");
-  const secret = process.env["CALL_BRIDGE_SECRET"];
-  if (!secret) throw new Error("Call bridge is not configured yet.");
-  return createHmac("sha256", secret).update(donorId).digest("hex").slice(0, 32);
-}
-
-async function signedBridgeUrl(donorId: string, fromNumber: string) {
-  return `${PUBLIC_BASE_URL}/api/public/call-bridge?donor=${encodeURIComponent(donorId)}&from=${encodeURIComponent(fromNumber)}&sig=${await bridgeSignature(donorId)}`;
-}
-
-async function twilioRequest(path: string, method: "GET" | "POST", form?: URLSearchParams) {
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  const twilioKey = process.env["TWILIO_API_KEY"];
-  if (!lovableKey || !twilioKey) {
-    throw new Error("Calling is not connected yet. Please try again soon.");
-  }
-  const response = await fetch(`${GATEWAY_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": twilioKey,
-      ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
-    },
-    ...(form ? { body: form.toString() } : {}),
-  });
-  const body = await response.text();
-  if (!response.ok) {
-    console.error(`Twilio request failed [${response.status}]: ${body}`);
-    throw new Error(`The call could not be placed [${response.status}]. Please try again.`);
-  }
-  return body ? JSON.parse(body) : {};
-}
-
+/**
+ * Verified-recipient call: validates the access token, logs the contact, and
+ * returns the donor's number so the browser can open the phone's dial pad.
+ * The number is only ever released to a verified recipient.
+ */
 export const callDonor = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z
