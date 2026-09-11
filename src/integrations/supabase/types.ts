@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_bridge_sessions: {
+        Row: {
+          created_at: string
+          donor_id: string
+          expires_at: string
+          id: string
+          recipient_mobile: string
+        }
+        Insert: {
+          created_at?: string
+          donor_id: string
+          expires_at?: string
+          id?: string
+          recipient_mobile: string
+        }
+        Update: {
+          created_at?: string
+          donor_id?: string
+          expires_at?: string
+          id?: string
+          recipient_mobile?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_bridge_sessions_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donors: {
         Row: {
           age: number
