@@ -246,6 +246,40 @@ function SearchPage() {
           </div>
         )}
 
+        {(stockQuery.isPending || stockedHospitals.length > 0) && (
+          <div className="mt-6">
+            <h2 className="font-display text-base font-semibold text-muted-foreground">
+              Hospitals with {params.blood} in stock
+            </h2>
+            {stockQuery.isPending ? (
+              <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> Checking hospital stock…
+              </div>
+            ) : (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {stockedHospitals.map((hospital) => (
+                  <div key={hospital.id} className="surface-card flex flex-col gap-2 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-display text-sm font-semibold leading-snug">
+                        {hospital.name}
+                      </p>
+                      <Badge variant="success">{hospital.units} units</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{hospital.city}</p>
+                    {hospital.contactNumber && (
+                      <Button size="sm" variant="outline" asChild>
+                        <a href={`tel:${hospital.contactNumber}`}>
+                          <Phone className="size-3.5" /> Call blood bank
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mt-6">
           {query.isPending ? (
             <div className="flex items-center gap-2 py-16 text-muted-foreground">
