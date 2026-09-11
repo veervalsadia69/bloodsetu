@@ -15,6 +15,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ApiPublicCallBridgeRouteImport } from './routes/api/public/call-bridge'
+import { Route as ApiPublicCallInboundRouteImport } from './routes/api/public/call-inbound'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const ApiPublicCallBridgeRoute = ApiPublicCallBridgeRouteImport.update({
   path: '/api/public/call-bridge',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCallInboundRoute = ApiPublicCallInboundRouteImport.update({
+  id: '/api/public/call-inbound',
+  path: '/api/public/call-inbound',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/api/public/call-bridge': typeof ApiPublicCallBridgeRoute
+  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/api/public/call-bridge': typeof ApiPublicCallBridgeRoute
+  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/verify': typeof VerifyRoute
   '/api/public/call-bridge': typeof ApiPublicCallBridgeRoute
+  '/api/public/call-inbound': typeof ApiPublicCallInboundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/verify'
     | '/api/public/call-bridge'
+    | '/api/public/call-inbound'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/verify'
     | '/api/public/call-bridge'
+    | '/api/public/call-inbound'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/verify'
     | '/api/public/call-bridge'
+    | '/api/public/call-inbound'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   VerifyRoute: typeof VerifyRoute
   ApiPublicCallBridgeRoute: typeof ApiPublicCallBridgeRoute
+  ApiPublicCallInboundRoute: typeof ApiPublicCallInboundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCallBridgeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/call-inbound': {
+      id: '/api/public/call-inbound'
+      path: '/api/public/call-inbound'
+      fullPath: '/api/public/call-inbound'
+      preLoaderRoute: typeof ApiPublicCallInboundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   VerifyRoute: VerifyRoute,
   ApiPublicCallBridgeRoute: ApiPublicCallBridgeRoute,
+  ApiPublicCallInboundRoute: ApiPublicCallInboundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

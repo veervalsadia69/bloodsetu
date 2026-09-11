@@ -1,27 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const BRIDGE_BASE_URL =
-  process.env["CALL_BRIDGE_BASE_URL"] ?? "https://bloodsetu.lovable.app";
-
-async function hmacHex(secret: string, message: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
-  return Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 /**
- * Masked call: the donor's number never leaves the server. We ask the calling
- * provider to ring the verified recipient first; when they answer, a signed
- * webhook bridges the call to the donor. Both sides see only the bridge number.
+ * Masked call: the donor's number never leaves the server. We hand the
+ * recipient a private bridge number to dial from their own phone; when the
+ * bridge answers it connects them to the donor. Both sides see only the bridge.
  */
 export const callDonor = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
@@ -54,11 +37,14 @@ export const callDonor = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!donor) throw new Error("This donor is no longer listed.");
 
-    const secret = process.env["CALL_BRIDGE_SECRET"];
-    if (!secret) throw new Error("Calling is not configured yet. Please try again soon.");
+    const { twilioVoiceNumber } = await import("@/lib/twilio.server");
+    const bridgeNumber = await twilioVoiceNumber();
 
-    const recipientE164 = `+91${recipient.mobile}`;
-    const signature = await hmacHex(secret, `${donor.id}|${recipientE164}`);
+    // Remember, briefly and privately, who this caller is about to reach.
+    await db.from("call_bridge_sessions").insert({
+      recipient_mobile: recipient.mobile,
+      donor_id: donor.id,
+    });
 
     // Record the contact so the recipient can see their recently called donors.
     await db.from("recipient_contact_logs").insert({
@@ -66,15 +52,8 @@ export const callDonor = createServerFn({ method: "POST" })
       donor_id: donor.id,
     });
 
-    const { twilioCreateCall, twilioVoiceNumber } = await import("@/lib/twilio.server");
-    const from = await twilioVoiceNumber();
-    const answerUrl = `${BRIDGE_BASE_URL}/api/public/call-bridge?d=${encodeURIComponent(
-      donor.id,
-    )}&r=${encodeURIComponent(recipientE164)}&s=${signature}&f=${encodeURIComponent(from)}`;
-    await twilioCreateCall(recipientE164, answerUrl);
-
-    // No phone number is returned — the call connects privately.
-    return { ok: true as const };
+    // Only the shared bridge number is returned — never the donor's number.
+    return { ok: true as const, bridgeNumber };
   });
 
 /** The recipient's own log of the donors they contacted most recently. */
