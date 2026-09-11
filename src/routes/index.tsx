@@ -100,7 +100,7 @@ function Home() {
                     />
                   </div>
                   <Button type="submit" size="lg" className="h-12 sm:col-span-2">
-                    <Search className="size-4" /> Search donors
+                    <Search className="size-4" /> Find donors — verify to contact
                   </Button>
                 </form>
               </div>
