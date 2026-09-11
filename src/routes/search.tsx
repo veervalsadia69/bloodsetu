@@ -168,11 +168,11 @@ function SearchPage() {
               <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
               <div>
                 <h2 className="font-display text-base font-semibold">
-                  Donor names and numbers are hidden
+                  Donor names and calling are hidden
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Verify your identity once with a live camera photo and a one-time code to unlock contact
-                  details for every matching donor.
+                  Verify your identity once with a live camera photo and a one-time code to unlock donor
+                  names and private, number-masked calling.
                 </p>
               </div>
             </div>
