@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, ShieldCheck, Search as SearchIcon } from "lucide-react";
+import { Loader2, Phone, ShieldCheck, Search as SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { callDonor } from "@/lib/calls.functions";
+import { callDonor, recentContacts } from "@/lib/calls.functions";
 import { ACCESS_TOKEN_KEY, BLOOD_TYPES } from "@/lib/donor-shared";
 import { searchDonors } from "@/lib/donors.functions";
 
@@ -54,8 +54,10 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const params = Route.useSearch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const run = useServerFn(searchDonors);
   const call = useServerFn(callDonor);
+  const loadRecent = useServerFn(recentContacts);
   const [token, setToken] = useState("");
   const [draft, setDraft] = useState(params);
   const [callingId, setCallingId] = useState<string | null>(null);
@@ -65,6 +67,7 @@ function SearchPage() {
     try {
       await call({ data: { token, donorId } });
       toast.success("Calling your phone now — answer and we'll connect you to the donor.");
+      queryClient.invalidateQueries({ queryKey: ["recent-contacts", token] });
     } catch (error) {
       toast.error(
         error instanceof Error && error.message.length < 160
@@ -96,6 +99,13 @@ function SearchPage() {
 
   const donors = query.data?.donors ?? [];
   const availableCount = donors.filter((donor) => donor.available).length;
+
+  const recentQuery = useQuery({
+    queryKey: ["recent-contacts", token],
+    queryFn: () => loadRecent({ data: { token } }),
+    enabled: Boolean(token) && Boolean(query.data?.verified),
+  });
+  const recent = recentQuery.data?.contacts ?? [];
 
   return (
     <div className="min-h-screen">
@@ -161,6 +171,44 @@ function SearchPage() {
           )}
           {query.data?.verified && <Badge variant="success">Verified access</Badge>}
         </div>
+
+        {recent.length > 0 && (
+          <div className="mt-5">
+            <h2 className="font-display text-base font-semibold text-muted-foreground">
+              Recently contacted
+            </h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {recent.map((contact) => (
+                <div key={contact.id} className="surface-card flex flex-col gap-2 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate font-display text-sm font-semibold">
+                      {contact.donorName}
+                    </p>
+                    <Badge variant="muted">{contact.bloodType}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {contact.neighborhood}, {contact.city} · called{" "}
+                    {new Date(contact.contactedAt).toLocaleString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={callingId === contact.donorId}
+                    onClick={() => handleCall(contact.donorId)}
+                  >
+                    <Phone className="size-3.5" />
+                    {callingId === contact.donorId ? "Calling…" : "Call again"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {!query.data?.verified && (
           <div className="surface-card mt-5 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">

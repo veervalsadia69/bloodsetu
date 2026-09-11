@@ -59,6 +59,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recipient_contact_logs: {
+        Row: {
+          created_at: string
+          donor_id: string
+          id: string
+          recipient_verification_id: string
+        }
+        Insert: {
+          created_at?: string
+          donor_id: string
+          id?: string
+          recipient_verification_id: string
+        }
+        Update: {
+          created_at?: string
+          donor_id?: string
+          id?: string
+          recipient_verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipient_contact_logs_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipient_contact_logs_recipient_verification_id_fkey"
+            columns: ["recipient_verification_id"]
+            isOneToOne: false
+            referencedRelation: "recipient_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipient_verifications: {
         Row: {
           access_token: string | null
