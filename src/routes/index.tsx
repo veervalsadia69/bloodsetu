@@ -71,7 +71,7 @@ function Home() {
                   className="grid gap-4 sm:grid-cols-2"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    navigate({ to: "/verify", search: { blood, city, area } });
+                    goToVerify();
                   }}
                 >
                   <div className="space-y-1.5">
