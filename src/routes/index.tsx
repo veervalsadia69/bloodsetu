@@ -67,7 +67,7 @@ function Home() {
                   className="grid gap-4 sm:grid-cols-2"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    navigate({ to: "/search", search: { blood, city, area } });
+                    navigate({ to: "/verify", search: { blood, city, area } });
                   }}
                 >
                   <div className="space-y-1.5">
