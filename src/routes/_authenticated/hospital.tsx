@@ -57,7 +57,7 @@ function HospitalDashboard() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [dates, setDates] = useState<Record<string, string>>({});
 
-  const hospitalQuery = useQuery({ queryKey: ["hospital"], queryFn: () => load({ data: {} }) });
+  const hospitalQuery = useQuery({ queryKey: ["hospital"], queryFn: () => load({}) });
 
   useEffect(() => {
     if (!hospitalQuery.data) return;
